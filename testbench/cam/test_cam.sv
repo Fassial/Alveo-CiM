@@ -22,7 +22,7 @@ end
 // interface define
 logic data_we;
 logic[CAM_INDEX_WIDTH-1:0] data_idx;
-logic[CAM_WIDTH-1:0] data_i, data_mask;
+logic[CAM_WIDTH-1:0] data_i, data_mask, data_o;
 logic index_rdy;
 logic[CAM_INDEX_WIDTH-1:0] index_o;
 // inst module
@@ -89,7 +89,7 @@ task unittest_(
 
         // check ans
         if (index_rdy) begin
-            $sformat(out, {"%x"}, index_o);
+            $sformat(out, {"%x-%x"}, index_o, data_o);
             judge(fans, ans_counter, out);
             ans_counter = ans_counter + 1;
         end
