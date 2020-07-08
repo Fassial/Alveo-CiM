@@ -7,6 +7,16 @@
 **/
 
 // enable all func unit
-// `define COMPILE_FULL_M
+`define COMPILE_FULL_M
+`ifdef COMPILE_FULL_M
+    `define COMPILE_FULL    1
+`else
+    `define COMPILE_FULL    0
+`endif
+
+// define associate to COMPILE_FULL
+
+// define not associate to COMPILE_FULL
+`define ALU_KIND    0
 
 `endif
