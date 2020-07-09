@@ -21,9 +21,9 @@ module cim #(
 endmodule
 
 module cim_cell_group #(
-    parameter   N_GROUP     =   12,
+    parameter   N_GROUP     =   1,
     parameter   DATA_WIDTH  =   32,
-    parameter   ALU_KIND    =   0,
+    parameter   ALU_KIND    =   `ALU_KIND,      // 0,
     localparam  COUNT_WIDTH =   $clog2(N_GROUP) + 1,
     localparam  type data_t = logic[DATA_WIDTH-1:0]
 ) (
