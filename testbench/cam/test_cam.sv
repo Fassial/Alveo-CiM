@@ -1,4 +1,4 @@
-// test cam
+// test tcam
 `include "test_cam.svh"
 
 module test_cam #(
@@ -6,7 +6,7 @@ module test_cam #(
     parameter       CAM_TEST_TARGET     =   `CAM_TEST_TARGET,
     // module parameter
     parameter       CAM_WIDTH   =   32,
-                    CAM_DEPTH   =   16,
+    parameter       CAM_DEPTH   =   16,
     localparam      CAM_INDEX_WIDTH     =   $clog2(CAM_DEPTH)
 ) (
 
@@ -20,14 +20,19 @@ always_ff @ (posedge clk) begin
 end
 
 // interface define
-logic data_we;
+logic data_we, data_vld;
 logic[CAM_INDEX_WIDTH-1:0] data_idx;
-logic[CAM_WIDTH-1:0] data_i, data_mask, data_o;
+logic[CAM_WIDTH-1:0] data_i, data_mask;
 logic index_rdy;
 logic[CAM_INDEX_WIDTH-1:0] index_o;
 // inst module
 generate if (CAM_TEST_TARGET == `TEST_CAM) begin
-    // TODO
+    cam #(
+        .CAM_WIDTH  ( CAM_WIDTH ),
+        .CAM_DEPTH  ( CAM_DEPTH )
+    ) cam_inst (
+        .*
+    );
 end else if (CAM_TEST_TARGET == `TEST_TCAM) begin
     tcam #(
         .TCAM_WIDTH ( CAM_WIDTH ),
@@ -89,14 +94,14 @@ task unittest_(
 
         // check ans
         if (index_rdy) begin
-            $sformat(out, {"%x-%x"}, index_o, data_o);
+            $sformat(out, {"%x"}, index_o);
             judge(fans, ans_counter, out);
             ans_counter = ans_counter + 1;
         end
 
         // issue req
         if (!$feof(freq)) begin
-            $fscanf(freq, "%x %x %x %x\n", data_we, data_idx, data_i, data_mask);
+            $fscanf(freq, "%x %x %x %x %x\n", data_we, data_vld, data_idx, data_i, data_mask);
             req_counter = req_counter + 1;
         end
     end
@@ -114,7 +119,15 @@ endtask
 initial begin
     wait(rst == 1'b0);
     summary = "";
-    unittest("tcam_simple");
+    if (CAM_TEST_TARGET == `TEST_CAM) begin
+        // test cam
+        unittest("cam_simple");
+    end else if (CAM_TEST_TARGET == `TEST_TCAM) begin
+        // test tcam
+        unittest("tcam_simple");
+    end else begin
+        // TODO
+    end
     $display("summary: %0s", summary);
     $stop;
 end
