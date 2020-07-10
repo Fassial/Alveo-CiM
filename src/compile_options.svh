@@ -17,6 +17,9 @@
 // define associate to COMPILE_FULL
 
 // define not associate to COMPILE_FULL
-`define ALU_KIND    0
+`define ALU_KIND            0
+
+// define non-value macro
+// `define PRIORMUX_ENABLED
 
 `endif
