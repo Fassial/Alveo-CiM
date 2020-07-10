@@ -5,7 +5,8 @@ module cam #(
     parameter       CAM_WIDTH   =   32,
     parameter       CAM_DEPTH   =   16,
     localparam      CAM_INDEX_WIDTH     =   $clog2(CAM_DEPTH),
-    localparam type cam_t       = logic[CAM_WIDTH-1:0]
+    localparam type cam_t       = logic[CAM_WIDTH-1:0],
+    localparam type camml_t     = logic[CAM_DEPTH-1:0]
 ) (
     // external signals
     input   logic   clk,
@@ -19,13 +20,17 @@ module cam #(
 
     // output index & data
     output  logic                       index_rdy,
+    `ifdef PRIORMUX_ENABLED
     output  logic[CAM_INDEX_WIDTH-1:0]  index_o
+    `else
+    output  camml_t                     camml_o
+    `endif
 );
 
 // def interface for cam_cell
-logic[CAM_DEPTH-1:0] data_match, cell_data_we;
+camml_t data_match, cell_data_we;
 // def interface for prior_mux
-logic[CAM_DEPTH-1:0] match_line;
+camml_t match_line;
 logic[CAM_INDEX_WIDTH-1:0] match_index;
 
 // set cell_data_we
@@ -55,6 +60,7 @@ for (genvar i = 0; i < CAM_DEPTH; ++i) begin : gen_cam_cell
     );
 end
 
+`ifdef PRIORMUX_ENABLED
 // inst prior_mux
 prior_mux #(
     .MUX_WIDTH  ( CAM_DEPTH )
@@ -66,9 +72,14 @@ prior_mux #(
     .match_index
 );
 assign match_line = data_match;
+`endif
 
 // set output
+`ifdef PRIORMUX_ENABLED
 assign index_o   = match_index;
+`else
+assign camml_o   = match_line;
+`endif
 assign index_rdy = |data_match;
 
 endmodule
