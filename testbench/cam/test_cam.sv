@@ -5,9 +5,8 @@ module test_cam #(
     // test target
     parameter       CAM_TEST_TARGET     =   `CAM_TEST_TARGET,
     // module parameter
-    parameter       CAM_WIDTH   =   32,
-    parameter       CAM_DEPTH   =   16,
-    localparam      CAM_INDEX_WIDTH     =   $clog2(CAM_DEPTH)
+    parameter       KEY_WIDTH   =   32,
+    parameter       KEY_DEPTH   =   16
 ) (
 
 );
@@ -19,24 +18,26 @@ always_ff @ (posedge clk) begin
     sync_rst <= rst;
 end
 
-// interface define
-logic data_we, data_vld;
-logic[CAM_INDEX_WIDTH-1:0] data_idx;
-logic[CAM_WIDTH-1:0] data_i, data_mask;
-logic index_rdy;
-logic[CAM_INDEX_WIDTH-1:0] index_o;
+// define interface for cam
+cam_req_t cam_req;
+cam_resp_t cam_resp;
+// define interface for tcam
+tcam_req_t tcam_req;
+tcam_resp_t tcam_resp;
 // inst module
 generate if (CAM_TEST_TARGET == `TEST_CAM) begin
+    // inst cam module
     cam #(
-        .CAM_WIDTH  ( CAM_WIDTH ),
-        .CAM_DEPTH  ( CAM_DEPTH )
+        .KEY_WIDTH  ( KEY_WIDTH ),
+        .KEY_DEPTH  ( KEY_DEPTH )
     ) cam_inst (
         .*
     );
 end else if (CAM_TEST_TARGET == `TEST_TCAM) begin
+    // inst tcam module
     tcam #(
-        .TCAM_WIDTH ( CAM_WIDTH ),
-        .TCAM_DEPTH ( CAM_DEPTH )
+        .KEY_WIDTH  ( KEY_WIDTH ),
+        .KEY_DEPTH  ( KEY_DEPTH )
     ) tcam_inst (
         .*
     );
@@ -90,19 +91,52 @@ task unittest_(
         cycle = cycle + 1;
 
         // reset control signals
-        data_we = 1'b0;
+        if (CAM_TEST_TARGET == `TEST_CAM) begin
+            // reset cam control signals
+            cam_req.addr_vld = 1'b0;
+            cam_req.data_vld = 1'b0;
+        end else if (CAM_TEST_TARGET == `TEST_TCAM) begin
+            // reset tcam control signals
+            tcam_req.addr_vld = 1'b0;
+            tcam_req.data_vld = 1'b0;
+        end else begin
+            // TODO
+        end
 
         // check ans
-        if (index_rdy) begin
-            $sformat(out, {"%x"}, index_o);
-            judge(fans, ans_counter, out);
-            ans_counter = ans_counter + 1;
+        if (CAM_TEST_TARGET == `TEST_CAM) begin
+            // check cam ans
+            if (cam_resp.addr_vld) begin
+                $sformat(out, {"%x-%x"}, cam_resp.addr, cam_resp.data);
+                judge(fans, ans_counter, out);
+                ans_counter = ans_counter + 1;
+            end
+        end else if (CAM_TEST_TARGET == `TEST_TCAM) begin
+            // check tcam ans
+            if (tcam_resp.addr_vld) begin
+                $sformat(out, {"%x-%x"}, tcam_resp.addr, tcam_resp.data);
+                judge(fans, ans_counter, out);
+                ans_counter = ans_counter + 1;
+            end
+        end else begin
+            // TODO
         end
 
         // issue req
-        if (!$feof(freq)) begin
-            $fscanf(freq, "%x %x %x %x %x\n", data_we, data_vld, data_idx, data_i, data_mask);
-            req_counter = req_counter + 1;
+        if (CAM_TEST_TARGET == `TEST_CAM) begin
+            // issue cam req
+            if (!$feof(freq)) begin
+                $fscanf(freq, "%x %x %x %x %x\n", cam_req.we, cam_req.addr_vld, cam_req.data_vld, cam_req.addr, cam_req.data);
+                req_counter = req_counter + 1;
+            end
+        end else if (CAM_TEST_TARGET == `TEST_TCAM) begin
+            // issue tcam req
+            if (!$feof(freq)) begin
+                $fscanf(freq, "%x %x %x %x %x %x\n", tcam_req.we, tcam_req.addr_vld, tcam_req.data_vld, tcam_req.addr, tcam_req.data, tcam_req.mask);
+                req_counter = req_counter + 1;
+            end
+        end else begin
+            // TODO
         end
     end
 

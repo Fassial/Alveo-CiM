@@ -7,6 +7,8 @@
 
 // testbench_defs
 `include "testbench_defs.svh"
+// cam defs
+`include "cam_defs.svh"
 
 `ifdef PATH_PREFIX
 `undef PATH_PREFIX
