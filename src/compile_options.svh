@@ -17,9 +17,14 @@
 // define associate to COMPILE_FULL
 
 // define not associate to COMPILE_FULL
+// define for cim
 `define ALU_KIND            0
+// define for cam
+`define KEY_WIDTH           32
+`define KEY_DEPTH           16
+`define VALUE_WIDTH         32
+`define VALUE_DEPTH         `KEY_DEPTH
 
 // define non-value macro
-// `define PRIORMUX_ENABLED
 
 `endif
