@@ -2,70 +2,59 @@
 `include "cam_defs.svh"
 
 module tcam #(
-    parameter       TCAM_WIDTH  =   32,
-    parameter       TCAM_DEPTH  =   16,
-    localparam      TCAM_INDEX_WIDTH    =   $clog2(TCAM_DEPTH),
-    localparam type tcam_t      = logic[TCAM_WIDTH-1:0],
-    localparam type camml_t     = logic[TCAM_DEPTH-1:0]
+    parameter       KEY_WIDTH   =   32,
+    parameter       KEY_DEPTH   =   16
 ) (
     // external signals
     input   logic   clk,
     input   logic   rst,
 
-    // input data
-    input   logic                       data_we,
-    input   logic[TCAM_INDEX_WIDTH-1:0] data_idx,
-    input   tcam_t                      data_i,
-    input   tcam_t                      data_mask,
-    input   logic                       data_vld,
+    // input tcam_req
+    input   tcam_req_t  tcam_req,
 
-    // output index & data
-    output  logic                       index_rdy,
-    `ifdef PRIORMUX_ENABLED
-    output  logic[TCAM_INDEX_WIDTH-1:0] index_o
-    `else
-    output  camml_t                     camml_o
-    `endif
+    // output tcam_resp
+    output  tcam_resp_t tcam_resp
 );
 
 // def interface for tcam_cell
-camml_t data_match, cell_data_we;
+logic[KEY_DEPTH-1:0] data_match, data_we;
+cam_t[KEY_DEPTH-1:0] data_o;
 // def interface for prior_mux
-camml_t match_line;
-logic[TCAM_INDEX_WIDTH-1:0] match_index;
+logic[KEY_DEPTH-1:0] match_line;
+addr_t match_index;
 
-// set cell_data_we
+// set data_we
 always_comb begin
     // default
-    cell_data_we = '0;
-    // set cell_data_we[data_idx] as 1
-    cell_data_we[data_idx] = data_we;
+    data_we = '0;
+    // set data_we[data_idx] as 1
+    data_we[tcam_req.addr] = tcam_req.addr_vld & tcam_req.we;
 end
 
 // inst tcam_cell
-for (genvar i = 0; i < TCAM_DEPTH; ++i) begin : gen_tcam_cell
+for (genvar i = 0; i < KEY_DEPTH; ++i) begin : gen_tcam_cell
     tcam_cell #(
-        .TCAM_WIDTH ( TCAM_WIDTH    )
+        .KEY_WIDTH  ( KEY_WIDTH     )
     ) tcam_cell_inst (
         // external signals
         .clk,
         .rst,
 
         // input data
-        .data_we    ( cell_data_we[i]   ),
-        .data_vld,
-        .data_i,
-        .data_mask,
+        .data_we    ( data_we[i]        ),
+        .data_vld   ( tcam_req.data_vld ),
+        .data_i     ( tcam_req.data     ),
+        .data_mask  ( tcam_req.mask     ),
 
         // output match
-        .data_match ( data_match[i]     )
+        .data_match ( data_match[i]     ),
+        .data_o     ( data_o[i]         )
     );
 end
 
-`ifdef PRIORMUX_ENABLED
 // inst prior_mux
 prior_mux #(
-    .MUX_WIDTH  ( TCAM_DEPTH    )
+    .MUX_WIDTH  ( KEY_DEPTH )
 ) prior_mux_inst (
     // input match_line
     .match_line,
@@ -74,21 +63,17 @@ prior_mux #(
     .match_index
 );
 assign match_line = data_match;
-`endif
 
 // set output
-`ifdef PRIORMUX_ENABLED
-assign index_o   = match_index;
-`else
-assign camml_o   = data_match;
-`endif
-assign index_rdy = |data_match;
+assign tcam_resp.addr     = match_index;
+assign tcam_resp.addr_vld = |data_match;
+assign tcam_resp.data     = data_o[tcam_req.addr];
+assign tcam_resp.data_vld = tcam_req.addr_vld & ~tcam_req.we;
 
 endmodule
 
 module tcam_cell #(
-    parameter       TCAM_WIDTH  =   32,
-    localparam type tcam_t      = logic[TCAM_WIDTH-1:0]
+    parameter       KEY_WIDTH   =   32
 ) (
     // external signals
     input   logic   clk,
@@ -97,41 +82,38 @@ module tcam_cell #(
     // input data
     input   logic   data_we,
     input   logic   data_vld,
-    input   tcam_t  data_i,
-    input   tcam_t  data_mask,
+    input   cam_t   data_i,
+    input   cam_t   data_mask,
 
-    // output match
-    output  logic   data_match
+    // output match & data
+    output  logic   data_match,
+    output  cam_t   data_o
 );
 
 // cell_data
-tcam_t cell_data, cell_data_n;
-// cell_data_mask
-tcam_t cell_data_mask, cell_data_mask_n;
+cam_t cell_data, cell_data_n;
 // cell_data_vld
 logic cell_data_vld, cell_data_vld_n;
 
-// assign output
-// compare data_i & cell_data
-// if all 0, data_i & cell_data match
-assign data_match = (~|((cell_data ^ data_i) & cell_data_mask)) && cell_data_vld;
-
-// update cell_data_n & cell_data_mask_n & cell_data_vld_n
+// update cell_data_n & cell_data_vld_n
 assign cell_data_n      = data_i;
-assign cell_data_mask_n = data_mask;
 assign cell_data_vld_n  = data_vld;
 
 // update cell_data
 always_ff @ (posedge clk) begin
     if (rst) begin
         cell_data       <= '0;
-        cell_data_mask  <= '0;
         cell_data_vld   <= 1'b0;
     end else if (data_we) begin
         cell_data       <= cell_data_n;
-        cell_data_mask  <= cell_data_mask_n;
         cell_data_vld   <= cell_data_vld_n;
     end
 end
+
+// assign output
+assign data_o = cell_data;
+// compare data_i & cell_data
+// if all 0, data_i & cell_data match
+assign data_match = (~|((cell_data ^ data_i) & data_mask)) && cell_data_vld;
 
 endmodule
