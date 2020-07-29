@@ -76,11 +76,27 @@ def encodeRange(s, t, hmax):
 
     return (r_value, r_mask)
 
-def tcode(p, d, hmax, h = None, eps = 1e-6):
-    word = eps
+def tcode(p, d, w, hmax, h = None):
+    word = []
+    bit_width = w - (int(math.log(hmax, 2) - 1)) + (hmax - 2)
     for i in range(d):
-        if h == None: word += encodeValue(p[i], hmax)
-        else:         word += encodeRange(p[i] - h // 2, p[i] + h // 2, hmax)
+        if h == None:
+            realEncode = encodeValue(p[i], hmax)
+            temp_res = []
+            for j in range(bit_width):
+                temp_res.append(realEncode % 2)
+                realEncode >>= 1
+            word.append(temp_res)
+        else:
+            realEncode1, realEncode2 = encodeRange(p[i] - h // 2, p[i] + h // 2, hmax)
+            temp_res = []
+            for j in range(bit_width):
+                temp_res.append(realEncode1 % 2)
+                realEncode1 >>= 1
+            for j in range(bit_width):
+                temp_res.append(realEncode2 % 2)
+                realEncode2 >>= 1
+            word.append(temp_res)
     return word
 
 def conj_bit(a, b):
