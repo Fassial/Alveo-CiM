@@ -87,8 +87,8 @@ def split_dataset():
         y_all = label
     )
     # check whether dir exists
-    if os.path.exists(TRAINSET): shutl.rmtree(TRAINSET)
-    if os.path.exists(TESTSET): shutl.rmtree(TESTSET)
+    if os.path.exists(TRAINSET): shutil.rmtree(TRAINSET)
+    if os.path.exists(TESTSET): shutil.rmtree(TESTSET)
     os.mkdir(TRAINSET)
     os.mkdir(TESTSET)
     # save raw data
@@ -136,8 +136,8 @@ def save_encodeset():
     os.mkdir(TRAINSET_FEATUREENCODE)
     os.mkdir(TRAINSET_LABEL)
     # check testset dir
-    if os.path.exists(TESTSET_FEATUREENCODE): shutl.rmtree(TESTSET_FEATUREENCODE)
-    if os.path.exists(TESTSET_LABEL): shutl.rmtree(TESTSET_LABEL)
+    if os.path.exists(TESTSET_FEATUREENCODE): shutil.rmtree(TESTSET_FEATUREENCODE)
+    if os.path.exists(TESTSET_LABEL): shutil.rmtree(TESTSET_LABEL)
     os.mkdir(TESTSET_FEATUREENCODE)
     os.mkdir(TESTSET_LABEL)
     # save x_train & y_train
