@@ -104,7 +104,7 @@ def split_dataset():
         x_test
     )
     utils.store_data(
-        os.path.join(TESTSET, "test", "label.csv"),
+        os.path.join(TESTSET, "label.csv"),
         y_test
     )
 
@@ -242,5 +242,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-  
-    
