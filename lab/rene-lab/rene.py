@@ -76,6 +76,18 @@ def encodeRange(s, t, hmax):
 
     return (r_value, r_mask)
 
+def _tcode(p, d, w, hmax, h = None):
+    word = []
+    bit_width = w - (int(math.log(hmax, 2) - 1)) + (hmax - 2)
+    for i in range(d):
+        if h == None:
+            realEncode = encodeValue(p[i], hmax)
+            word.append(realEncode)
+        else:
+            realEncode = encodeRange(p[i] - h // 2, p[i] + h // 2, hmax)
+            word.append(realEncode)
+    return word
+
 def tcode(p, d, w, hmax, h = None):
     word = []
     bit_width = w - (int(math.log(hmax, 2) - 1)) + (hmax - 2)

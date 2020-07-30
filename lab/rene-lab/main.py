@@ -14,15 +14,19 @@ import utils
 # file loc params
 PREFIX = "."
 DATASET = os.path.join(PREFIX, "dataset")
-TRAINSET = os.path.join(DATASET, "train")
-TRAINSET_FEATUREENCODE = os.path.join(TRAINSET, "feature_encode")
-TRAINSET_LABEL = os.path.join(TRAINSET, "label")
-TESTSET = os.path.join(DATASET, "test")
-TESTSET_FEATUREENCODE = os.path.join(TESTSET, "feature_encode")
-TESTSET_LABEL = os.path.join(TESTSET, "label")
 FEATURE_FILE = os.path.join(DATASET, "feature.csv")
 LABEL_FILE   = os.path.join(DATASET, "label.csv")
 FEATURE_ENCODE_FILE = os.path.join(DATASET, "feature_encode.csv")
+# train set
+TRAINSET = os.path.join(DATASET, "train")
+TRAINSET_FEATUREENCODE = os.path.join(TRAINSET, "feature_encode")
+TRAINSET_LABEL = os.path.join(TRAINSET, "label")
+# test set
+TESTSET = os.path.join(DATASET, "test")
+TESTSET_FEATUREENCODE = os.path.join(TESTSET, "feature_encode")
+TESTSET_LABEL = os.path.join(TESTSET, "label")
+# eval dir
+EVALDIR = os.path.join(DATASET, "eval")
 # ecode params
 W = 8
 HMAX = 8
@@ -30,6 +34,8 @@ HMAX = 8
 P_TRAIN = 0.7
 N_TOP = 20
 MAX_ROW = 2000
+# eval params
+H = [2**i for i in range(1, 5)]     # [2, 4, 8, 16]
 
 """
 _split_dataset:
@@ -197,6 +203,110 @@ def save_encodeset():
         )
 
 """
+_ternaryMatch:
+    ternary match
+    @params:
+        _point(np.array)    : point with shape(n_feature, )
+        _range(np.array)    : range with shape(n_feature, 2)
+    @rets:
+        flag(bool)          : whether _point & _range ternary math
+"""
+def _ternaryMatch(_point, _range):
+    if _point.shape[0] != _range.shape[0]: return False
+    for i in range(_point.shape[0]):
+        if not rene.ternaryMatch(_range[i, 0], _range[i, 1], _point[i], 0): return False
+    return True
+
+"""
+_get_cubes:
+    get cubes from (points, h)
+    @params:
+        points(np.array)    : feature matrix with shape(n_point, n_feature)
+        h(int)              : side length of cube
+    @rets:
+        cubes(np.array)     : cubes of (points, h) with shape(n_point, n_feature, 2)
+"""
+def _get_cubes(points, h):
+    cubes = []
+    for i in range(points.shape[0]):
+        cube = rene._tcode(
+            p = points[i],
+            d = points[i].shape[0],
+            w = W,
+            hmax = HMAX,
+            h = h
+        )
+        cubes.append(cube)
+    return np.array(cubes).astype(np.int32)
+
+"""
+_get_nmatch:
+    get the number of match(query point & points' cubes)
+    @params:
+        points(np.array)    : dataset with shape(n_points, n_feature) to build cubes
+        querys(np.array)    : queryset with shape(n_querys, n_feature) to query cubes
+        h(int)              : side length of cube
+    @rets:
+        nmatch(np.array)    : the number of match(query point & points' cubes) with shape(n_querys,)
+"""
+def _get_nmatch(points, querys, h = 32):
+    # init nmatch
+    nmatch = []
+    # get cubes
+    cubes = _get_cubes(
+        points = points,
+        h = h
+    )
+    # set nmatch
+    for i in range(points.shape[0]):
+        count = 0
+        for j in range(cubes.shape[0]):
+            if _ternaryMatch(points[i], cubes[j]): count += 1
+        nmatch.append(count)
+    return np.array(nmatch)
+
+def get_nmatch():
+    # set params
+    h = 32
+    # get x_train & x_test
+    # get raw dataset
+    feature = utils.load_data(FEATURE_FILE)[:, 1:]
+    feature_max = np.max(feature)
+    # get trainset
+    train_feature = utils.load_data(
+        os.path.join(TRAINSET, "feature.csv")
+    )
+    # remap trainset to Z
+    train_feature_remap = utils.remap(train_feature, (0, 2**W-1), feature_max)
+    # get RENE-encode
+    train_feature_encode = utils.encode(train_feature_remap, train_feature_remap[0].shape[0], W, HMAX)
+    # get testset
+    test_feature = utils.load_data(
+        os.path.join(TESTSET, "feature.csv")
+    )
+    # remap testset to Z
+    test_feature_remap = utils.remap(test_feature, (0, 2**W-1), feature_max)
+    # get RENE-encode
+    test_feature_encode = utils.encode(test_feature_remap, test_feature_remap[0].shape[0], W, HMAX)
+    # get nmatch
+    nmatch = _get_nmatch(
+        points = train_feature_encode,
+        querys = test_feature_encode,
+        h = h
+    )
+    # check eval_dir
+    if os.path.exists(EVALDIR): shutil.rmtree(EVALDIR)
+    os.mkdir(EVALDIR)
+    # store nmatch
+    utils.store_data(
+        os.path.join(EVALDIR, "nmatch_" + str(h) + ".csv"),
+        nmatch
+    )
+    # get pmatch
+    pmatch = sum(nmatch > 0) / nmatch.shape[0]
+    print("pmatch:", pmatch)
+
+"""
 ptopN:
     calculate accuracy of dist-classifier based on RENE-encode
     @params:
@@ -229,8 +339,9 @@ main:
     main func
 """
 def main():
-    split_dataset()
-    save_encodeset()
+    # split_dataset()
+    # save_encodeset()
+    get_nmatch()
     """
     P = ptopN(
         x_train = x_train,
