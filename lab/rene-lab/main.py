@@ -5,6 +5,7 @@ Created on July 29 11:59, 2020
 """
 import os
 import math
+import shutil
 import numpy as np
 from collections import Counter
 # local dep
@@ -86,8 +87,8 @@ def split_dataset():
         y_all = label
     )
     # check whether dir exists
-    if os.path.exists(TRAINSET): os.removedirs(TRAINSET)
-    if os.path.exists(TESTSET): os.removedirs(TESTSET)
+    if os.path.exists(TRAINSET): shutl.rmtree(TRAINSET)
+    if os.path.exists(TESTSET): shutl.rmtree(TESTSET)
     os.mkdir(TRAINSET)
     os.mkdir(TESTSET)
     # save raw data
@@ -135,8 +136,8 @@ def save_encodeset():
     os.mkdir(TRAINSET_FEATUREENCODE)
     os.mkdir(TRAINSET_LABEL)
     # check testset dir
-    if os.path.exists(TESTSET_FEATUREENCODE): os.removedirs(TESTSET_FEATUREENCODE)
-    if os.path.exists(TESTSET_LABEL): os.removedirs(TESTSET_LABEL)
+    if os.path.exists(TESTSET_FEATUREENCODE): shutl.rmtree(TESTSET_FEATUREENCODE)
+    if os.path.exists(TESTSET_LABEL): shutl.rmtree(TESTSET_LABEL)
     os.mkdir(TESTSET_FEATUREENCODE)
     os.mkdir(TESTSET_LABEL)
     # save x_train & y_train
