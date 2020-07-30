@@ -14,7 +14,11 @@ import utils
 PREFIX = "."
 DATASET = os.path.join(PREFIX, "dataset")
 TRAINSET = os.path.join(DATASET, "train")
+TRAINSET_FEATUREENCODE = os.path.join(TRAINSET, "feature_encode")
+TRAINSET_LABEL = os.path.join(TRAINSET, "label")
 TESTSET = os.path.join(DATASET, "test")
+TESTSET_FEATUREENCODE = os.path.join(TESTSET, "feature_encode")
+TESTSET_LABEL = os.path.join(TESTSET, "label")
 FEATURE_FILE = os.path.join(DATASET, "feature.csv")
 LABEL_FILE   = os.path.join(DATASET, "label.csv")
 FEATURE_ENCODE_FILE = os.path.join(DATASET, "feature_encode.csv")
@@ -82,8 +86,10 @@ def split_dataset():
         y_all = label
     )
     # check whether dir exists
-    if not os.path.exists(TRAINSET): os.mkdir(TRAINSET)
-    if not os.path.exists(TESTSET): os.mkdir(TESTSET)
+    if os.path.exists(TRAINSET): os.removedirs(TRAINSET)
+    if os.path.exists(TESTSET): os.removedirs(TESTSET)
+    os.mkdir(TRAINSET)
+    os.mkdir(TESTSET)
     # save raw data
     utils.store_data(
         os.path.join(TRAINSET, "feature.csv"),
@@ -123,27 +129,37 @@ def save_encodeset():
     )[:].reshape(-1, 1)
     # remap trainset to Z
     feature_remap = utils.remap(train_feature, (0, 2**W-1), feature_max)
+    # check trainset dir
+    if os.path.exists(TRAINSET_FEATUREENCODE): os.removedirs(TRAINSET_FEATUREENCODE)
+    if os.path.exists(TRAINSET_LABEL): os.removedirs(TRAINSET_LABEL)
+    os.mkdir(TRAINSET_FEATUREENCODE)
+    os.mkdir(TRAINSET_LABEL)
+    # check testset dir
+    if os.path.exists(TESTSET_FEATUREENCODE): os.removedirs(TESTSET_FEATUREENCODE)
+    if os.path.exists(TESTSET_LABEL): os.removedirs(TESTSET_LABEL)
+    os.mkdir(TESTSET_FEATUREENCODE)
+    os.mkdir(TESTSET_LABEL)
     # save x_train & y_train
     for i in range(feature_remap.shape[0] // MAX_ROW):
         feature_encode = utils.encode(feature_remap[(i*MAX_ROW):(i+1)*MAX_ROW, :], feature_remap[0].shape[0], W, HMAX)
         feature_encode = feature_encode.reshape(feature_encode.shape[0], -1)
         utils.store_data(
-            os.path.join(TRAINSET, "feature_encode_" + str(i*MAX_ROW) + "_" + str((i+1)*MAX_ROW) + ".csv"),
-            feature_remap[(i*MAX_ROW):((i+1)*MAX_ROW), :]
+            os.path.join(TRAINSET_FEATUREENCODE, "feature_encode_" + str(i*MAX_ROW) + "_" + str((i+1)*MAX_ROW) + ".csv"),
+            feature_encode
         )
         utils.store_data(
-            os.path.join(TRAINSET, "label_" + str(i*MAX_ROW) + "_" + str((i+1)*MAX_ROW) + ".csv"),
+            os.path.join(TRAINSET_LABEL, "label_" + str(i*MAX_ROW) + "_" + str((i+1)*MAX_ROW) + ".csv"),
             train_label[(i*MAX_ROW):((i+1)*MAX_ROW)]
         )
     if feature_remap.shape[0] % MAX_ROW != 0:
         feature_encode = utils.encode(feature_remap[((feature_remap.shape[0] // MAX_ROW)*MAX_ROW):feature_remap.shape[0], :], feature_remap[0].shape[0], W, HMAX)
         feature_encode = feature_encode.reshape(feature_encode.shape[0], -1)
         utils.store_data(
-            os.path.join(TRAINSET, "feature_encode_" + str((feature_remap.shape[0] // MAX_ROW)*MAX_ROW) + "_" + str(feature_remap.shape[0]) + ".csv"),
-            feature_remap[((feature_remap.shape[0] // MAX_ROW)*MAX_ROW):feature_remap.shape[0], :]
+            os.path.join(TRAINSET_FEATUREENCODE, "feature_encode_" + str((feature_remap.shape[0] // MAX_ROW)*MAX_ROW) + "_" + str(feature_remap.shape[0]) + ".csv"),
+            feature_encode
         )
         utils.store_data(
-            os.path.join(TRAINSET, "label_" + str((feature_remap.shape[0] // MAX_ROW)*MAX_ROW) + "_" + str(feature_remap.shape[0]) + ".csv"),
+            os.path.join(TRAINSET_LABEL, "label_" + str((feature_remap.shape[0] // MAX_ROW)*MAX_ROW) + "_" + str(feature_remap.shape[0]) + ".csv"),
             train_label[((feature_remap.shape[0] // MAX_ROW)*MAX_ROW):feature_remap.shape[0]]
         )
     # get testset
@@ -160,22 +176,22 @@ def save_encodeset():
         feature_encode = utils.encode(feature_remap[(i*MAX_ROW):(i+1)*MAX_ROW, :], feature_remap[0].shape[0], W, HMAX)
         feature_encode = feature_encode.reshape(feature_encode.shape[0], -1)
         utils.store_data(
-            os.path.join(TESTSET, "feature_encode_" + str(i*MAX_ROW) + "_" + str((i+1)*MAX_ROW) + ".csv"),
-            feature_remap[(i*MAX_ROW):((i+1)*MAX_ROW), :]
+            os.path.join(TESTSET_FEATUREENCODE, "feature_encode_" + str(i*MAX_ROW) + "_" + str((i+1)*MAX_ROW) + ".csv"),
+            feature_encode
         )
         utils.store_data(
-            os.path.join(TESTSET, "label_" + str(i*MAX_ROW) + "_" + str((i+1)*MAX_ROW) + ".csv"),
+            os.path.join(TESTSET_LABEL, "label_" + str(i*MAX_ROW) + "_" + str((i+1)*MAX_ROW) + ".csv"),
             test_label[(i*MAX_ROW):((i+1)*MAX_ROW)]
         )
     if feature_remap.shape[0] % MAX_ROW != 0:
         feature_encode = utils.encode(feature_remap[((feature_remap.shape[0] // MAX_ROW)*MAX_ROW):feature_remap.shape[0], :], feature_remap[0].shape[0], W, HMAX)
         feature_encode = feature_encode.reshape(feature_encode.shape[0], -1)
         utils.store_data(
-            os.path.join(TESTSET, "feature_encode_" + str((feature_remap.shape[0] // MAX_ROW)*MAX_ROW) + "_" + str(feature_remap.shape[0]) + ".csv"),
-            feature_remap[((feature_remap.shape[0] // MAX_ROW)*MAX_ROW):feature_remap.shape[0], :]
+            os.path.join(TESTSET_FEATUREENCODE, "feature_encode_" + str((feature_remap.shape[0] // MAX_ROW)*MAX_ROW) + "_" + str(feature_remap.shape[0]) + ".csv"),
+            feature_encode
         )
         utils.store_data(
-            os.path.join(TESTSET, "label_" + str((feature_remap.shape[0] // MAX_ROW)*MAX_ROW) + "_" + str(feature_remap.shape[0]) + ".csv"),
+            os.path.join(TESTSET_LABEL, "label_" + str((feature_remap.shape[0] // MAX_ROW)*MAX_ROW) + "_" + str(feature_remap.shape[0]) + ".csv"),
             test_label[((feature_remap.shape[0] // MAX_ROW)*MAX_ROW):feature_remap.shape[0]]
         )
 
@@ -212,6 +228,7 @@ main:
     main func
 """
 def main():
+    split_dataset()
     save_encodeset()
     """
     P = ptopN(
