@@ -10,6 +10,7 @@ import numpy as np
 from collections import Counter
 # local dep
 import utils
+import rene
 
 # file loc params
 PREFIX = "."
