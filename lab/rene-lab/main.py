@@ -9,12 +9,17 @@ import shutil
 import numpy as np
 from collections import Counter
 # local dep
+import sys
+sys.path.append("./rene")
 import utils
 import rene
 
 # file loc params
 PREFIX = "."
+# dataset & testdataset
 DATASET = os.path.join(PREFIX, "dataset")
+TESTDATASET = os.path.join(PREFIX, "testdataset")
+# data file
 FEATURE_FILE = os.path.join(DATASET, "feature.csv")
 LABEL_FILE   = os.path.join(DATASET, "label.csv")
 FEATURE_ENCODE_FILE = os.path.join(DATASET, "feature_encode.csv")
@@ -22,10 +27,12 @@ FEATURE_ENCODE_FILE = os.path.join(DATASET, "feature_encode.csv")
 TRAINSET = os.path.join(DATASET, "train")
 TRAINSET_FEATUREENCODE = os.path.join(TRAINSET, "feature_encode")
 TRAINSET_LABEL = os.path.join(TRAINSET, "label")
+TESTTRAINSET = os.path.join(TESTDATASET, "train")
 # test set
 TESTSET = os.path.join(DATASET, "test")
 TESTSET_FEATUREENCODE = os.path.join(TESTSET, "feature_encode")
 TESTSET_LABEL = os.path.join(TESTSET, "label")
+TESTTESTSET = os.path.join(TESTDATASET, "test")
 # eval dir
 EVALDIR = os.path.join(DATASET, "eval")
 # ecode params
@@ -215,7 +222,10 @@ _ternaryMatch:
 def _ternaryMatch(_point, _range):
     if _point.shape[0] != _range.shape[0]: return False
     for i in range(_point.shape[0]):
-        if not rene.ternaryMatch(_range[i, 0], _range[i, 1], _point[i], 0): return False
+        # print(_range[i, 0], _range[i, 1], _point[i])
+        if not rene.ternary_match(_range[i, 0], _range[i, 1], _point[i], np.zeros(_point[i].shape)):
+            # print(i)
+            return False
     return True
 
 """
@@ -230,13 +240,14 @@ _get_cubes:
 def _get_cubes(points, h):
     cubes = []
     for i in range(points.shape[0]):
-        cube = rene._tcode(
+        cube = rene.tcode(
             p = points[i],
             d = points[i].shape[0],
             w = W,
-            hmax = HMAX,
+            hmax = max(HMAX, h),
             h = h
         )
+        # print(cube)
         cubes.append(cube)
     return np.array(cubes).astype(np.int32)
 
@@ -244,13 +255,13 @@ def _get_cubes(points, h):
 _get_nmatch:
     get the number of match(query point & points' cubes)
     @params:
-        points(np.array)    : dataset with shape(n_points, n_feature) to build cubes
-        querys(np.array)    : queryset with shape(n_querys, n_feature) to query cubes
-        h(int)              : side length of cube
+        points(np.array)        : dataset with shape(n_points, n_feature) to build cubes
+        querys_encode(np.array) : queryset_encode with shape(n_querys, n_feature) to query cubes
+        h(int)                  : side length of cube
     @rets:
-        nmatch(np.array)    : the number of match(query point & points' cubes) with shape(n_querys,)
+        nmatch(np.array)        : the number of match(query point & points' cubes) with shape(n_querys,)
 """
-def _get_nmatch(points, querys, h = 32):
+def _get_nmatch(points, querys_encode, h = 32):
     # init nmatch
     nmatch = []
     # get cubes
@@ -262,37 +273,44 @@ def _get_nmatch(points, querys, h = 32):
     for i in range(points.shape[0]):
         count = 0
         for j in range(cubes.shape[0]):
-            if _ternaryMatch(points[i], cubes[j]): count += 1
+            if _ternaryMatch(querys_encode[i], cubes[j]): count += 1
         nmatch.append(count)
     return np.array(nmatch)
 
 def get_nmatch():
     # set params
-    h = 32
+    h = 16
     # get x_train & x_test
     # get raw dataset
-    feature = utils.load_data(FEATURE_FILE)[:, 1:]
-    feature_max = np.max(feature)
+    # feature = utils.load_data(FEATURE_FILE)[:, 1:]
+    train_feature = utils.load_data(os.path.join(TESTTRAINSET, "feature.csv"))[:, 1:]
+    train_feature_max = np.max(train_feature)
+    test_feature = utils.load_data(os.path.join(TESTTESTSET, "feature.csv"))[:, 1:]
+    test_feature_max = np.max(test_feature)
+    feature_max = max(train_feature_max, test_feature_max)
     # get trainset
     train_feature = utils.load_data(
         os.path.join(TRAINSET, "feature.csv")
-    )
+        # os.path.join(TESTTRAINSET, "feature.csv")
+    )# [:1, :]
     # remap trainset to Z
     train_feature_remap = utils.remap(train_feature, (0, 2**W-1), feature_max)
     # get RENE-encode
-    train_feature_encode = utils.encode(train_feature_remap, train_feature_remap[0].shape[0], W, HMAX)
+    train_feature_encode = utils.encode(train_feature_remap, train_feature_remap[0].shape[0], W, max(HMAX, h))
     # get testset
     test_feature = utils.load_data(
         os.path.join(TESTSET, "feature.csv")
-    )
+        # os.path.join(TESTTESTSET, "feature.csv")
+    )# [:1, :]
     # remap testset to Z
     test_feature_remap = utils.remap(test_feature, (0, 2**W-1), feature_max)
     # get RENE-encode
-    test_feature_encode = utils.encode(test_feature_remap, test_feature_remap[0].shape[0], W, HMAX)
+    test_feature_encode = utils.encode(test_feature_remap, test_feature_remap[0].shape[0], W, max(HMAX, h))
     # get nmatch
+    # print(train_feature_remap[0, 588], test_feature_remap[0, 588])
     nmatch = _get_nmatch(
-        points = train_feature_encode,
-        querys = test_feature_encode,
+        points = train_feature_remap,
+        querys_encode = test_feature_encode,
         h = h
     )
     # check eval_dir

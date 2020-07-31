@@ -7,6 +7,8 @@ import os
 import math
 import numpy as np
 # local dep
+import sys
+sys.path.append("./rene")
 import rene
 
 # file loc params
@@ -69,6 +71,25 @@ def remap(src, _range, src_max = None):
     dst = src * _range_len / src_max
     dst += _range[0]
     return np.round(dst).astype(np.int32)
+
+"""
+_encode:
+    RENE encode
+    @params:
+        p(np.array)     : feature vector
+        d(int)          : number of dimension to consider
+        w(int)          : bit width of gray code
+        hmax(int)       : max range len we consider
+    @rets:
+        res(np.array)   : RENE-encode vector
+"""
+def _encode(p, d, w = W, hmax = HMAX):
+    # init res
+    res = []
+    for i in range(p.shape[0]):
+        if i % 100 == 0: print("curr: ", str(i))
+        res.append(rene._tcode(p[i, :], d, w, hmax))
+    return np.array(res).astype(np.int32)
 
 """
 encode:

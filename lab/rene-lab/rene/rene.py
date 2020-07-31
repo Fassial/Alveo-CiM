@@ -8,8 +8,8 @@ by fassial
 import math
 import random
 
-W = 16
-H_max = 16
+W = 8
+H_max = 8
 
 def brgc(value):
     return value ^ (value >> 1)
@@ -31,7 +31,7 @@ def get_ternary(value, mask):
 def print_ternary(value, mask):
     print(get_ternary(value, mask))
 
-def encodeValue(i, hmax):
+def encodeValue(i, hmax = H_max):
     gray = brgc(i)
     word = gray >> int(math.log(hmax, 2) - 1)
     for x in range(hmax):
@@ -40,7 +40,7 @@ def encodeValue(i, hmax):
             word = (word << 1) | b
     return word
 
-def encodeRange(s, t, hmax):
+def encodeRange(s, t, hmax = H_max):
     gamma = []
     if (t - s + 1) < hmax:
         r1 = (s, s+hmax-1)
@@ -84,7 +84,10 @@ def _tcode(p, d, w, hmax, h = None):
             realEncode = encodeValue(p[i], hmax)
             word.append(realEncode)
         else:
-            realEncode = encodeRange(p[i] - h // 2, p[i] + h // 2, hmax)
+            s = (p[i] - h // 2) if (p[i] - h // 2) > 0 else 0
+            t = (p[i] + h // 2) if (p[i] + h // 2) < 2**w-1 else 2**w-1
+            realEncode = encodeRange(s, t, hmax)
+            # print(p[i], "(", s, ",", t, ")", realEncode)
             word.append(realEncode)
     return word
 
@@ -100,15 +103,18 @@ def tcode(p, d, w, hmax, h = None):
                 realEncode >>= 1
             word.append(temp_res)
         else:
-            realEncode1, realEncode2 = encodeRange(p[i] - h // 2, p[i] + h // 2, hmax)
-            temp_res = []
+            s = (p[i] - h // 2) if (p[i] - h // 2) > 0 else 0
+            t = (p[i] + h // 2) if (p[i] + h // 2) < 2**w-1 else 2**w-1
+            realEncode1, realEncode2 = encodeRange(s, t, hmax)
+            # if i == 588: print(p[i], "(", s, ",", t, ")")
+            temp_res1, temp_res2 = [], []
             for j in range(bit_width):
-                temp_res.append(realEncode1 % 2)
+                temp_res1.append(realEncode1 % 2)
                 realEncode1 >>= 1
             for j in range(bit_width):
-                temp_res.append(realEncode2 % 2)
+                temp_res2.append(realEncode2 % 2)
                 realEncode2 >>= 1
-            word.append(temp_res)
+            word.append((temp_res1, temp_res2))
     return word
 
 def conj_bit(a, b):
@@ -137,6 +143,21 @@ def conj(r1, r2):
             value[i] = res
             
     return (int(''.join(value), 2), int(''.join(mask), 2))
+
+def ternary_match(v1, m1, v2, m2):
+    # print(type(v1), type(m1), type(v2), type(m2))
+    # print(v1.shape, m1.shape, v2.shape, m2.shape)
+    left = v1.copy()
+    for i in range(left.shape[0]):
+        if m1[i] == 1: left[i] = 0
+        if m2[i] == 1: left[i] = 0
+    right = v2.copy()
+    for i in range(right.shape[0]):
+        if m1[i] == 1: right[i] = 0
+        if m2[i] == 1: right[i] = 0
+    # print(left == right)
+    # print(sum(left == right))
+    return (left == right).all()
 
 def ternaryMatch(v1, m1, v2, m2):
     return (v1 & ~m1 & ~m2) == (v2 & ~m1 & ~m2)
