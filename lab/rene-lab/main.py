@@ -271,7 +271,7 @@ def _get_nmatch(points, querys_encode, h = 32):
         h = h
     )# ; print(cubes.shape)
     # set nmatch
-    for i in range(points.shape[0]):
+    for i in range(querys_encode.shape[0]):
         count = 0
         for j in range(cubes.shape[0]):
             if _ternaryMatch(querys_encode[i], cubes[j]): count += 1
@@ -323,6 +323,58 @@ def get_nmatch():
     pmatch = sum(nmatch > 0) / nmatch.shape[0]
     print("pmatch:", pmatch)
 
+def _get_nmatch2(points, querys, h = 16):
+    # init nmatch
+    nmatch = []
+    # set nmatch
+    for i in range(querys.shape[0]):
+        if i % 100 == 0: print("cycle:", i)
+        count = 0
+        for j in range(points.shape[0]):
+            diff = np.abs(points[j] - querys[i])
+            if (diff < h).all(): count += 1
+        nmatch.append(count)
+    return np.array(nmatch)
+
+def get_nmatch2():
+    # set params
+    h = 32
+    # get x_train & x_test
+    # get trainset
+    train_feature = utils.load_data(
+        os.path.join(TRAINSET, "feature.csv")
+        # os.path.join(TESTTRAINSET, "feature.csv")
+    )# [:1, :]
+    # get testset
+    test_feature = utils.load_data(
+        os.path.join(TESTSET, "feature.csv")
+        # os.path.join(TESTTESTSET, "feature.csv")
+    )# [:1, :]
+    train_feature_max = np.max(train_feature)
+    test_feature_max = np.max(test_feature)
+    feature_max = max(train_feature_max, test_feature_max)
+    # remap trainset to Z
+    train_feature_remap = utils.remap(train_feature, (0, 2**W-1), feature_max)
+    # remap testset to Z
+    test_feature_remap = utils.remap(test_feature, (0, 2**W-1), feature_max)
+    # get nmatch
+    nmatch = _get_nmatch2(
+        points = train_feature_remap,
+        querys = test_feature_remap,
+        h = h
+    )
+    # check eval_dir
+    if os.path.exists(EVALDIR): shutil.rmtree(EVALDIR)
+    os.mkdir(EVALDIR)
+    # store nmatch
+    utils.store_data(
+        os.path.join(EVALDIR, "nmatch_" + str(h) + ".csv"),
+        nmatch
+    )
+    # get pmatch
+    pmatch = sum(nmatch > 0) / nmatch.shape[0]
+    print("pmatch:", pmatch)
+
 """
 ptopN:
     calculate accuracy of dist-classifier based on RENE-encode
@@ -358,7 +410,8 @@ main:
 def main():
     # split_dataset()
     # save_encodeset()
-    get_nmatch()
+    # get_nmatch()
+    get_nmatch2()
     """
     P = ptopN(
         x_train = x_train,
