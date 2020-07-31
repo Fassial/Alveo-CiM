@@ -281,27 +281,23 @@ def get_nmatch():
     # set params
     h = 16
     # get x_train & x_test
-    # get raw dataset
-    # feature = utils.load_data(FEATURE_FILE)[:, 1:]
-    train_feature = utils.load_data(os.path.join(TESTTRAINSET, "feature.csv"))[:, 1:]
-    train_feature_max = np.max(train_feature)
-    test_feature = utils.load_data(os.path.join(TESTTESTSET, "feature.csv"))[:, 1:]
-    test_feature_max = np.max(test_feature)
-    feature_max = max(train_feature_max, test_feature_max)
     # get trainset
     train_feature = utils.load_data(
         os.path.join(TRAINSET, "feature.csv")
         # os.path.join(TESTTRAINSET, "feature.csv")
     )# [:1, :]
-    # remap trainset to Z
-    train_feature_remap = utils.remap(train_feature, (0, 2**W-1), feature_max)
-    # get RENE-encode
-    train_feature_encode = utils.encode(train_feature_remap, train_feature_remap[0].shape[0], W, max(HMAX, h))
     # get testset
     test_feature = utils.load_data(
         os.path.join(TESTSET, "feature.csv")
         # os.path.join(TESTTESTSET, "feature.csv")
     )# [:1, :]
+    train_feature_max = np.max(train_feature)
+    test_feature_max = np.max(test_feature)
+    feature_max = max(train_feature_max, test_feature_max)
+    # remap trainset to Z
+    train_feature_remap = utils.remap(train_feature, (0, 2**W-1), feature_max)
+    # get RENE-encode
+    train_feature_encode = utils.encode(train_feature_remap, train_feature_remap[0].shape[0], W, max(HMAX, h))
     # remap testset to Z
     test_feature_remap = utils.remap(test_feature, (0, 2**W-1), feature_max)
     # get RENE-encode
