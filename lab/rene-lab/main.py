@@ -338,7 +338,7 @@ def _get_nmatch2(points, querys, h = 16):
 
 def get_nmatch2():
     # set params
-    h = 32
+    h = 8
     # get x_train & x_test
     # get trainset
     train_feature = utils.load_data(
