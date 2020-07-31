@@ -8,8 +8,8 @@ import random
 import numpy as np
 
 # encode params
-W = 32
-HMAX = 32
+W = 8
+HMAX = 8
 
 """
 _get_binaryencode:
@@ -59,6 +59,9 @@ def brgc(value):
         else: res[i] = 1
     return res
 
+def print_binary(value, w = W):
+    return _get_binaryencode(value, w)
+
 """
 get_ternary:
     get ternary encode of (value, mask)
@@ -75,6 +78,9 @@ def get_ternary(value, mask):
         else: res += str(value[-i])
     return res
 
+def print_ternary(value, mask):
+    return get_ternary(value, mask)
+
 """
 encodeValue:
     get RENE-encode of value
@@ -87,15 +93,15 @@ encodeValue:
 def encodeValue(value, hmax = HMAX):
     # get gray(w, )
     gray = brgc(value)
-    gray = gray[int(math.log(hmax, 2) - 1):].tolist() 
+    gray = gray[int(math.log(hmax, 2) - 1):].tolist()
     # init word
     word = []
     for x in range(hmax):
         if x != 0 and x != hmax / 2:
             b = 1 - int(math.floor((_get_realvalue(value) - x) / float(hmax))) % 2
             word.append(b)
-    word.reverse()
-    word.extend(gray)
+    # print(gray, word)
+    word.reverse(); word.extend(gray)
     return np.array(word)
 
 """
@@ -135,6 +141,8 @@ def _conj(r1, r2):
         if res == '*': mask[i] = 1
         else: value[i] = int(res, 2)
 
+    value, mask = value.tolist(), mask.tolist()
+    value.reverse(); mask.reverse()
     r12 = (value, mask)
     return np.array(r12)
 
@@ -240,3 +248,117 @@ def encodeRange(s, t, hmax = HMAX):
 
     res = (r_value, r_mask)
     return np.array(res)
+
+"""
+ternary_match:
+    ternary match
+    @params:
+        v1(np.array)    : value1 with shape(bit_width, )
+        m1(np.array)    : mask1 with shape(bit_width, )
+        v2(np.array)    : value2 with shape(bit_width, )
+        m2(np.array)    : mask2 with shape(bit_width, )
+    @rets:
+        flag(bool)      : whether match
+"""
+def ternary_match(v1, m1, v2, m2):
+    left = v1.copy()
+    for i in range(left.shape[0]):
+        if m1[i] == 1: left[i] = 0
+        if m2[i] == 1: left[i] = 0
+    right = v2.copy()
+    for i in range(right.shape[0]):
+        if m1[i] == 1: right[i] = 0
+        if m2[i] == 1: right[i] = 0
+    return (left == right).all()
+
+"""
+tcode:
+    tcode of p
+    @params:
+        p(np.array)     : point with shape(n_feature, )
+        d(int)          : dimission to consider
+        w(int)          : w
+        hmax(int)       : hmax
+        h(int)          : side length of cube
+    @rets:
+        word(np.array)  : tcode of p
+"""
+def tcode(p, d, w, hmax, h = None):
+    word = []
+    bit_width = w - (int(math.log(hmax, 2) - 1)) + (hmax - 2)
+    for i in range(d):
+        if h == None:
+            realEncode = encodeValue(
+                _get_binaryencode(
+                    value = p[i],
+                    w = w
+                ),
+                hmax
+            )
+            word.append(realEncode)
+        else:
+            s = (p[i] - h // 2) if (p[i] - h // 2) > 0 else 0
+            t = (p[i] + h // 2) if (p[i] + h // 2) < 2**w-1 else 2**w-1
+            realEncode = encodeRange(
+                _get_binaryencode(
+                    value = s,
+                    w = w
+                ),
+                _get_binaryencode(
+                    value = t,
+                    w = w
+                ),
+                hmax
+            )
+            # if i == 6: print(p[i], "(", s, ",", t, ")", realEncode)
+            word.append(realEncode)
+    return np.array(word)
+
+def test():
+    # Creates random ranges and tests points in each range 
+    
+    for i in range(100):
+        s = random.randint(0, 2**W-2)
+        len = random.randint(1, (2**W-s-1))
+        e = s + len
+        # print("(", s, ",", e, ")", len)
+        (vr, mr) = encodeRange(
+            s = _get_binaryencode(
+                value = s,
+                w = W
+            ),
+            t = _get_binaryencode(
+                value = e,
+                w = W
+            ),
+            hmax = HMAX
+        )
+
+        for j in range(10):
+            p = s + 1# random.randint(0, 2**W)
+            vp = encodeValue(
+                value = _get_binaryencode(
+                    value = p,
+                    w = W
+                ),
+                hmax = HMAX
+            )
+
+            # if (p >= s and p <= e): print(p, "(", s, ",", e, ")")
+            if (p >= s and p <= e and not ternary_match(vr, mr, vp, np.zeros(vp.shape))) or ((p < s or p > e) and ternary_match(vr, mr, vp, np.zeros(vp.shape))):
+                print("ERROR: TEST FAILED FOR RANGE [%d, %d] AND POINT %d:" % (s, e, p))
+                print("Range encoding: ",
+                    # print_ternary((vr, mr))
+                    (vr, mr)
+                )
+                print("Point encoding: ",
+                    # print_binary(vp)
+                    vp
+                )
+                return False
+            
+    print("TEST SUCCEEDED!")
+    return True
+
+if __name__ == "__main__":
+    test()

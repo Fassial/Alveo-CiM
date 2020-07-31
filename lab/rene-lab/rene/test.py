@@ -27,6 +27,21 @@ def _get_binaryencode(value, w = W):
         value >>= 1
     return np.array(res)
 
+"""
+_get_realvalue:
+    get the real value of binary-encode
+    @params:
+        value(np.array) : binary-encode with shape(w, )
+    @rets:
+        res(int)        : the real value of binary-encode
+"""
+def _get_realvalue(value):
+    res = 0
+    for i in reversed(range(value.shape[0])):
+        res <<= 1
+        res += int(value[i])
+    return res
+
 def test_brgc():
     # get value & value_be
     value = random.randint(0, 2**W)
@@ -73,14 +88,12 @@ def test_encodeRange():
     s_value_be = _get_binaryencode(s_value, w = W)
     t_value_be = _get_binaryencode(t_value, w = W)
     # test encodeRange
-    # print(_get_binaryencode(
-    #     value = rene.encodeRange(s_value, t_value, hmax)[0],
-    #     w = reneW
-    # ), rene_full.encodeRange(s_value_be, t_value_be, hmax)[0])
-    # print(_get_binaryencode(
-    #     value = rene.encodeRange(s_value, t_value, hmax)[1],
-    #     w = reneW
-    # ), rene_full.encodeRange(s_value_be, t_value_be, hmax)[1])
+    # print(bin(_get_realvalue(
+    #     value = rene_full.encodeRange(s_value_be, t_value_be, hmax)[0]
+    # )), bin(rene.encodeRange(s_value, t_value, hmax)[0]))
+    # print(bin(_get_realvalue(
+    #     value = rene_full.encodeRange(s_value_be, t_value_be, hmax)[1]
+    # )), bin(rene.encodeRange(s_value, t_value, hmax)[1]))
     res_0 = (_get_binaryencode(
         value = rene.encodeRange(s_value, t_value, hmax)[0],
         w = reneW

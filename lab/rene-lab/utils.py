@@ -9,7 +9,8 @@ import numpy as np
 # local dep
 import sys
 sys.path.append("./rene")
-import rene
+# import rene
+import rene_full as rene
 
 # file loc params
 PREFIX = "."

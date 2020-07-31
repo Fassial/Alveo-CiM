@@ -12,7 +12,8 @@ from collections import Counter
 import sys
 sys.path.append("./rene")
 import utils
-import rene
+# import rene
+import rene_full as rene
 
 # file loc params
 PREFIX = "."
@@ -220,6 +221,7 @@ _ternaryMatch:
         flag(bool)          : whether _point & _range ternary math
 """
 def _ternaryMatch(_point, _range):
+    # print(_point.shape, _range.shape)
     if _point.shape[0] != _range.shape[0]: return False
     for i in range(_point.shape[0]):
         # print(_range[i, 0], _range[i, 1], _point[i])
@@ -235,7 +237,7 @@ _get_cubes:
         points(np.array)    : feature matrix with shape(n_point, n_feature)
         h(int)              : side length of cube
     @rets:
-        cubes(np.array)     : cubes of (points, h) with shape(n_point, n_feature, 2)
+        cubes(np.array)     : cubes of (points, h) with shape(n_point, n_feature, 2, bit_width)
 """
 def _get_cubes(points, h):
     cubes = []
@@ -246,8 +248,7 @@ def _get_cubes(points, h):
             w = W,
             hmax = max(HMAX, h),
             h = h
-        )
-        # print(cube)
+        )# ; print(np.array(cube).shape)
         cubes.append(cube)
     return np.array(cubes).astype(np.int32)
 
@@ -268,7 +269,7 @@ def _get_nmatch(points, querys_encode, h = 32):
     cubes = _get_cubes(
         points = points,
         h = h
-    )
+    )# ; print(cubes.shape)
     # set nmatch
     for i in range(points.shape[0]):
         count = 0
@@ -279,18 +280,18 @@ def _get_nmatch(points, querys_encode, h = 32):
 
 def get_nmatch():
     # set params
-    h = 16
+    h = 64
     # get x_train & x_test
     # get trainset
     train_feature = utils.load_data(
-        os.path.join(TRAINSET, "feature.csv")
-        # os.path.join(TESTTRAINSET, "feature.csv")
-    )# [:1, :]
+        # os.path.join(TRAINSET, "feature.csv")
+        os.path.join(TESTTRAINSET, "feature.csv")
+    )[:1, :]
     # get testset
     test_feature = utils.load_data(
-        os.path.join(TESTSET, "feature.csv")
-        # os.path.join(TESTTESTSET, "feature.csv")
-    )# [:1, :]
+        # os.path.join(TESTSET, "feature.csv")
+        os.path.join(TESTTESTSET, "feature.csv")
+    )[:1, :]
     train_feature_max = np.max(train_feature)
     test_feature_max = np.max(test_feature)
     feature_max = max(train_feature_max, test_feature_max)
@@ -303,7 +304,8 @@ def get_nmatch():
     # get RENE-encode
     test_feature_encode = utils.encode(test_feature_remap, test_feature_remap[0].shape[0], W, max(HMAX, h))
     # get nmatch
-    # print(train_feature_remap[0, 588], test_feature_remap[0, 588])
+    # print(train_feature_remap[0, 6], test_feature_remap[0, 6])
+    # print(train_feature_encode[0, 6], test_feature_encode[0, 6])
     nmatch = _get_nmatch(
         points = train_feature_remap,
         querys_encode = test_feature_encode,
