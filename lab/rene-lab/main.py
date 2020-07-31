@@ -338,7 +338,7 @@ def _get_nmatch2(points, querys, h = 16):
 
 def get_nmatch2():
     # set params
-    _h = 16
+    _h = 8
     h = _h // 2
     # get x_train & x_test
     # get trainset
