@@ -1,0 +1,7 @@
+# dir
+/dataset
+/testdataset
+/__pycache__
+
+# file
+dataset.zip
