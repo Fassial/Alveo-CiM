@@ -133,7 +133,7 @@ def test():
     # init points & values
     points = np.array([[i]*N_FEATURE for i in range(N_POINT)])
     values = np.array([[i // N_CLUSTER]*N_VALUE for i in range(N_POINT)])
-    # get hknn
+    # inst hknn
     hknn_inst = hknn(
         points = points,
         values = values,
