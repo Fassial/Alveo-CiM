@@ -7,6 +7,7 @@ import math
 import numpy as np
 from scipy.stats import norm
 from scipy.optimize import minimize
+from collections import Counter
 
 class alsh:
     """
@@ -36,6 +37,7 @@ class alsh:
         # set dataset
         self.points = points
         self.labels = labels
+        self.labels_counter = Counter(labels.reshape((-1,)))
         # set alsh params
         self.k = k
         self._ord = _ord
@@ -284,7 +286,7 @@ class alsh:
                 if buckets.__contains__(key): buckets[key].append(i)
                 else: buckets[key] = [i]
                 mask[j] = 0
-        print(buckets.keys())
+        print(buckets.keys()); print(len([key for k in buckets.keys() if "*" not in key]))
         print("buckets got")
         return buckets
 
@@ -326,6 +328,44 @@ class alsh:
             mask[j] = 0
         if op == "or": return set(bucket)
         return []
+
+    def get_score(self, querys, labels, op = "and"):
+        """
+        Get score(recall, precision) of querys.
+        Parameters:
+        -----------
+        querys : :py.class`ndarray <numpy.ndarray>` of shape `(n_querys, n_features)`
+            query points
+        labels : :py.class`ndarray <numpy.ndarray>` of shape `(n_querys, )`
+            labels of query points
+        op : str, {`or`, `and`}
+            query op
+        Returns:
+        --------
+        scores : :py.class`ndarray <numpy.ndarray>` of shape `(n_querys, 2)`
+            score(recall, precision) of querys
+        """
+        # init scores
+        scores = []; print("getting score...")
+        # get scores
+        for i in range(querys.shape[0]):
+            # get query & label
+            query = querys[i]
+            label = labels[i]
+            # get bucket
+            bucket = self.predict(
+                query = query,
+                op = op
+            )
+            # get bucket_points & bucket_labels
+            # bucket_points = self.points[bucket]
+            bucket_labels = self.labels[bucket]
+            # get recall & precision
+            recall = np.sum(bucket_labels == label) / self.labels_counter[label]
+            prec = np.sum(bucket_labels == label) / bucket_labels.shape[0]
+            scores.append([recall, prec])
+        print("score got")
+        return np.array(scores)
 
 # test params
 N_POINTS = 100
