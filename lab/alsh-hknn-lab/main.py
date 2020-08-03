@@ -3,6 +3,7 @@ Created on August 03 18:00, 2020
 
 @author: fassial
 """
+import os
 # local dep
 import utils
 from alsh import alsh
