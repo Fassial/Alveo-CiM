@@ -286,7 +286,7 @@ class alsh:
                 if buckets.__contains__(key): buckets[key].append(i)
                 else: buckets[key] = [i]
                 mask[j] = 0
-        print(buckets.keys()); print(len([key for k in buckets.keys() if "*" not in key]))
+        print(buckets.keys()); print(len([key for key in buckets.keys() if "*" not in key]))
         print("buckets got")
         return buckets
 
