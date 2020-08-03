@@ -105,6 +105,7 @@ class alsh:
         c :float
             the adaptive param c of alsh
         """
+        print("getting c...")
         # get meanDks
         meanDks = []
         for i in range(self.points.shape[0]):
@@ -115,6 +116,7 @@ class alsh:
         list.sort(meanDks)
         # c = min(5 * mean(meanDks), 95%th meanDk)
         c = min(5 * np.mean(meanDks), meanDks[int(len(meanDks)*0.95)])
+        print("c got")
         return c
 
     def _p_r(self, r):
@@ -187,12 +189,14 @@ class alsh:
         # - 'trust-exact' :ref:`(see here) <optimize.minimize-trustexact>`
         # - 'trust-krylov':ref:`(see here) <optimize.minimize-trustkrylov>`
         # - custom - a callable object (added in version 0.14.0)
+        print("getting r...")
         res = minimize(
             fun = self._rho_r,
             x0 = r0
         )
         # get corresponding r
         r = res.x[0]; print("r:", r)
+        print("r got")
         return r
 
     def forward(self, query):
@@ -258,8 +262,8 @@ class alsh:
             the buckets of hashtable
         """
         buckets = dict()
+        print("getting buckets...")
         for i in range(self.points.shape[0]):
-            if i % 100 == 0: print("processing", str(i), "th points")
             # get the original bucket
             ori_bucket = self.forward(
                 query = self.points[i]
@@ -281,6 +285,7 @@ class alsh:
                 else: buckets[key] = [i]
                 mask[j] = 0
         print(buckets.keys())
+        print("buckets got")
         return buckets
 
     def predict(self, query, op = "or"):

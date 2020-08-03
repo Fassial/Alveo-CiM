@@ -10,6 +10,8 @@ from alsh import alsh
 
 # dataset params
 DATASET = os.path.join(".", "dataset")
+N_DATASET = 1000
+P_TRAIN = 0.7
 # alsh params
 N_HASHFUNCS = 4
 K = 10
@@ -19,8 +21,8 @@ def main():
         utils.load_dataset(dirpath = DATASET)
     # inst alsh
     alsh_inst = alsh(
-        points = x_train,
-        labels = x_test,
+        points = x_train[:int(N_DATASET*P_TRAIN)],
+        labels = x_test[:int(N_DATASET*P_TRAIN)],
         n_hashfuncs = N_HASHFUNCS,
         k = K
     )
