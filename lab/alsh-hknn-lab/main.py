@@ -8,7 +8,7 @@ import utils
 from alsh import alsh
 
 # dataset params
-DATASET = "./predataset"
+DATASET = os.path.join(".", "dataset")
 # alsh params
 N_HASHFUNCS = 4
 K = 10
