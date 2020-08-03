@@ -319,7 +319,7 @@ class alsh:
         # extend bucket
         if self.buckets.__contains__(key): bucket.extend(self.buckets[key])
         # end _and
-        if op == "and": return set(bucket)
+        if op == "and": return list(set(bucket))
         """
         # for _or
         mask = np.zeros(ori_bucket.shape)
@@ -329,7 +329,7 @@ class alsh:
             # insert into buckets
             if self.buckets.__contains__(key): bucket.extend(self.buckets[key])
             mask[j] = 0
-        if op == "or": return set(bucket)
+        if op == "or": return list(set(bucket))
         """
         return []
 
