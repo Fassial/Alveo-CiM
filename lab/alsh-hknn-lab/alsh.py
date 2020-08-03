@@ -259,6 +259,7 @@ class alsh:
         """
         buckets = dict()
         for i in range(self.points.shape[0]):
+            if i % 100 == 0: print("processing", str(i), "th points")
             # get the original bucket
             ori_bucket = self.forward(
                 query = self.points[i]
