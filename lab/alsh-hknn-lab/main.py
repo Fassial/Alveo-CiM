@@ -14,7 +14,7 @@ DATASET = os.path.join(".", "dataset")
 N_DATASET = 5000
 P_TRAIN = 0.7
 # alsh params
-N_HASHFUNCS = 32
+N_HASHFUNCS = 1024
 K = 10
 
 def main():
@@ -34,8 +34,8 @@ def main():
     # get scores
     start_time = timeit.default_timer()
     scores = alsh_inst.get_score(
-        querys = x_test,
-        labels = y_test,
+        querys = x_test[:int(N_DATASET*(1-P_TRAIN))],
+        labels = y_test[:int(N_DATASET*(1-P_TRAIN))],
         op = "and"
     )
     print(scores)

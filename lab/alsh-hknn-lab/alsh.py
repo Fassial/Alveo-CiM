@@ -277,6 +277,7 @@ class alsh:
             # insert into buckets
             if buckets.__contains__(key): buckets[key].append(i)
             else: buckets[key] = [i]
+            """
             # for _or
             mask = np.zeros(ori_bucket.shape)
             for j in range(mask.shape[0]):
@@ -286,6 +287,7 @@ class alsh:
                 if buckets.__contains__(key): buckets[key].append(i)
                 else: buckets[key] = [i]
                 mask[j] = 0
+            """
         print(buckets.keys()); print(len([key for key in buckets.keys() if "*" not in key]))
         print("buckets got")
         return buckets
@@ -318,6 +320,7 @@ class alsh:
         if self.buckets.__contains__(key): bucket.extend(self.buckets[key])
         # end _and
         if op == "and": return set(bucket)
+        """
         # for _or
         mask = np.zeros(ori_bucket.shape)
         for j in range(mask.shape[0]):
@@ -327,6 +330,7 @@ class alsh:
             if self.buckets.__contains__(key): bucket.extend(self.buckets[key])
             mask[j] = 0
         if op == "or": return set(bucket)
+        """
         return []
 
     def get_score(self, querys, labels, op = "and"):
