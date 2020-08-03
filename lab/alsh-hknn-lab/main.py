@@ -33,7 +33,7 @@ def main():
     print("init alsh runs for %.1fs" % (end_time - start_time))
     # get scores
     start_time = timeit.default_timer()
-    scores = self.get_score(
+    scores = alsh_inst.get_score(
         querys = x_test,
         labels = y_test,
         op = "and"
