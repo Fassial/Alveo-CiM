@@ -367,6 +367,7 @@ class alsh:
             # get recall & precision
             recall = np.sum(bucket_labels == label) / self.labels_counter[label]
             prec = np.sum(bucket_labels == label) / bucket_labels.shape[0]
+            print(bucket_labels, recall, prec)
             scores.append([recall, prec])
         print("score got")
         return np.array(scores)
