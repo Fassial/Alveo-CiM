@@ -25,7 +25,7 @@ def main():
     start_time = timeit.default_timer()
     alsh_inst = alsh(
         points = x_train[:int(N_DATASET*P_TRAIN)],
-        labels = x_test[:int(N_DATASET*P_TRAIN)],
+        labels = y_test[:int(N_DATASET*P_TRAIN)],
         n_hashfuncs = N_HASHFUNCS,
         k = K
     )
