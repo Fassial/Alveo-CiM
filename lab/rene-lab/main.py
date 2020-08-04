@@ -27,6 +27,7 @@ FEATURE_ENCODE_FILE = os.path.join(DATASET, "feature_encode.csv")
 # train set
 TRAINSET = os.path.join(DATASET, "train")
 TRAINSET_FEATUREENCODE = os.path.join(TRAINSET, "feature_encode")
+TRAINSET_RANGEENCODE = os.path.join(TRAINSET, "range_encode")
 TRAINSET_LABEL = os.path.join(TRAINSET, "label")
 TESTTRAINSET = os.path.join(TESTDATASET, "train")
 # test set
@@ -39,6 +40,7 @@ EVALDIR = os.path.join(DATASET, "eval")
 # ecode params
 W = 8
 HMAX = 8
+H = [4, 6, 8]
 # train & test params
 P_TRAIN = 0.7
 N_TOP = 20
@@ -178,6 +180,31 @@ def save_encodeset():
             os.path.join(TRAINSET_LABEL, "label_" + str((feature_remap.shape[0] // MAX_ROW)*MAX_ROW) + "_" + str(feature_remap.shape[0]) + ".csv"),
             train_label[((feature_remap.shape[0] // MAX_ROW)*MAX_ROW):feature_remap.shape[0]]
         )
+    # save x_train's range encode
+    if os.path.exists(TRAINSET_RANGEENCODE): shutil.rmtree(TRAINSET_RANGEENCODE)
+    os.mkdir(TRAINSET_RANGEENCODE)
+    for h in H:
+        range_encode_path = os.path.join(TRAINSET_RANGEENCODE, "range_encode_" + str(h))
+        if os.path.exists(range_encode_path): shutil.rmtree(range_encode_path)
+        os.mkdir(range_encode_path)
+    for i in range(feature_remap.shape[0] // MAX_ROW):
+        # get range encode
+        for h in H:
+            range_encode = utils.encode(feature_remap[(i*MAX_ROW):(i+1)*MAX_ROW, :], feature_remap[0].shape[0], W, HMAX, h)
+            range_encode = range_encode.reshape(range_encode.shape[0], -1)
+            utils.store_data(
+                os.path.join(TRAINSET_RANGEENCODE, "range_encode_" + str(h), str(i*MAX_ROW) + "_" + str((i+1)*MAX_ROW) + ".csv"),
+                range_encode
+            )
+    if feature_remap.shape[0] % MAX_ROW != 0:
+        # get range encode
+        for h in H:
+            range_encode = utils.encode(feature_remap[((feature_remap.shape[0] // MAX_ROW)*MAX_ROW):feature_remap.shape[0], :], feature_remap[0].shape[0], W, HMAX, h)
+            range_encode = range_encode.reshape(range_encode.shape[0], -1)
+            utils.store_data(
+                os.path.join(TRAINSET_RANGEENCODE, "range_encode_" + str(h), str((feature_remap.shape[0] // MAX_ROW)*MAX_ROW) + "_" + str(feature_remap.shape[0]) + ".csv"),
+                range_encode
+            )
     # get testset
     test_feature = utils.load_data(
         os.path.join(TESTSET, "feature.csv")

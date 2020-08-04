@@ -100,15 +100,16 @@ encode:
         d(int)          : number of dimension to consider
         w(int)          : bit width of gray code
         hmax(int)       : max range len we consider
+        h(int)          : side length of cube
     @rets:
         res(np.array)   : RENE-encode vector
 """
-def encode(p, d, w = W, hmax = HMAX):
+def encode(p, d, w = W, hmax = HMAX, h = None):
     # init res
     res = []
     for i in range(p.shape[0]):
         if i % 100 == 0: print("curr: ", str(i))
-        res.append(rene.tcode(p[i, :], d, w, hmax))
+        res.append(rene.tcode(p[i, :], d, w, hmax, h))
     return np.array(res).astype(np.int32)
 
 """
