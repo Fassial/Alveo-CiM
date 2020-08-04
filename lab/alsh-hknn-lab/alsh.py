@@ -292,7 +292,7 @@ class alsh:
         print("buckets got")
         return buckets
 
-    def predict(self, query, op = "or"):
+    def predict(self, query, op = "and"):
         """
         Get the bucket(np.array) of query point.
         Parameters:
