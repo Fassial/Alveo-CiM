@@ -35,8 +35,8 @@ class alsh:
         None
         """
         # set dataset
-        self.points = points
-        self.labels = labels
+        self.points = points; print(self.points.shape)
+        self.labels = labels; print(self.labels.shape)
         self.labels_counter = Counter(labels.reshape((-1,)))
         # set alsh params
         self.k = k
