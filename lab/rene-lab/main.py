@@ -16,7 +16,7 @@ import utils
 import rene_full as rene
 
 # file loc params
-PREFIX = "."
+PREFIX = ".."
 # dataset & testdataset
 DATASET = os.path.join(PREFIX, "dataset")
 TESTDATASET = os.path.join(PREFIX, "testdataset")

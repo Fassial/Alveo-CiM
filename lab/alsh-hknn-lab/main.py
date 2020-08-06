@@ -10,8 +10,8 @@ import utils
 from alsh import alsh
 
 # dataset params
-DATASET = os.path.join(".", "dataset")
-SCORE_FILE = os.path.join("scores.csv")
+DATASET = os.path.join("..", "dataset")
+SCORE_FILE = os.path.join(".", "scores.csv")
 N_DATASET = 5000
 P_TRAIN = 0.7
 # alsh params
