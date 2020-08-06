@@ -1,0 +1,3 @@
+[submodule "lab/hierarchical-lab/flann"]
+	path = lab/hierarchical-lab/flann
+	url = https://github.com/mariusmuja/flann
