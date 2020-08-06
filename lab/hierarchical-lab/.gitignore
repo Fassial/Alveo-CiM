@@ -1,5 +1,6 @@
 # dir
 /__pycache__
+/eval
 
 # file
 *.pyc
