@@ -17,9 +17,9 @@ import rene_full as rene
 
 # file loc params
 PREFIX = ".."
-# dataset & testdataset
+# dataset & predataset
 DATASET = os.path.join(PREFIX, "dataset")
-TESTDATASET = os.path.join(PREFIX, "testdataset")
+PREDATASET = os.path.join(PREFIX, "predataset")
 # data file
 FEATURE_FILE = os.path.join(DATASET, "feature.csv")
 LABEL_FILE   = os.path.join(DATASET, "label.csv")
@@ -29,12 +29,12 @@ TRAINSET = os.path.join(DATASET, "train")
 TRAINSET_FEATUREENCODE = os.path.join(TRAINSET, "feature_encode")
 TRAINSET_RANGEENCODE = os.path.join(TRAINSET, "range_encode")
 TRAINSET_LABEL = os.path.join(TRAINSET, "label")
-TESTTRAINSET = os.path.join(TESTDATASET, "train")
+PRETRAINSET = os.path.join(PREDATASET, "train")
 # test set
 TESTSET = os.path.join(DATASET, "test")
 TESTSET_FEATUREENCODE = os.path.join(TESTSET, "feature_encode")
 TESTSET_LABEL = os.path.join(TESTSET, "label")
-TESTTESTSET = os.path.join(TESTDATASET, "test")
+PRETESTSET = os.path.join(PREDATASET, "test")
 # eval dir
 EVALDIR = os.path.join(DATASET, "eval")
 # ecode params
@@ -312,12 +312,12 @@ def get_nmatch():
     # get trainset
     train_feature = utils.load_data(
         # os.path.join(TRAINSET, "feature.csv")
-        os.path.join(TESTTRAINSET, "feature.csv")
+        os.path.join(PRETRAINSET, "feature.csv")
     )[:1, :]
     # get testset
     test_feature = utils.load_data(
         # os.path.join(TESTSET, "feature.csv")
-        os.path.join(TESTTESTSET, "feature.csv")
+        os.path.join(PRETESTSET, "feature.csv")
     )[:1, :]
     train_feature_max = np.max(train_feature)
     test_feature_max = np.max(test_feature)
@@ -371,12 +371,12 @@ def get_nmatch2():
     # get trainset
     train_feature = utils.load_data(
         os.path.join(TRAINSET, "feature.csv")
-        # os.path.join(TESTTRAINSET, "feature.csv")
+        # os.path.join(PRETRAINSET, "feature.csv")
     )# [:1, :]
     # get testset
     test_feature = utils.load_data(
         os.path.join(TESTSET, "feature.csv")
-        # os.path.join(TESTTESTSET, "feature.csv")
+        # os.path.join(PRETESTSET, "feature.csv")
     )# [:1, :]
     train_feature_max = np.max(train_feature)
     test_feature_max = np.max(test_feature)
