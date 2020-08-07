@@ -52,10 +52,16 @@ def ptopK(x_train, y_train, x_test, y_test):
     print("start nn_index...")
     buckets = []
     for i in range(x_test.shape[0]):
+        start_time = timeit.default_timer()
         bucket = lsh_inst.query(
             query_point = x_test[i]
         )# ; print(bucket[0][0][1])
+        end_time = timeit.default_timer()
+        if i % 100 == 0: print("one query runs %.1fs" % (end_time-start_time))
+        start_time = timeit.default_timer()
         buckets.append([int(point[0][1]) for point in bucket])
+        end_time = timeit.default_timer()
+        if i % 100 == 0: print("one query runs %.1fs" % (end_time-start_time))
     buckets = np.array(buckets)
     print("complete nn_index")
     # calculate P & n_match
