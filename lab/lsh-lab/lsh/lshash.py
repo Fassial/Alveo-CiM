@@ -9,7 +9,7 @@ import json
 import numpy as np
 import scipy.spatial.distance as dist
 
-from storage import storage
+from .storage import storage
 
 try:
     from bitarray import bitarray

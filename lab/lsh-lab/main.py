@@ -48,7 +48,7 @@ def ptopK(x_train, y_train, x_test, y_test, k = K):
     for i in range(x_train.shape[0]):
         lsh_inst.index(
             input_point = x_train[i],
-            extra_data = str(y_train[i])
+            extra_data = str(int(y_train[i]))
         )
     print("complete build_index")
     # get query result
@@ -57,18 +57,19 @@ def ptopK(x_train, y_train, x_test, y_test, k = K):
     for i in range(x_test.shape[0]):
         bucket = lsh_inst.query(
             query_point = x_test[i]
-        )
+        )# ; print(bucket[0][0][1])
         buckets.append([int(point[0][1]) for point in bucket])
+    buckets = np.array(buckets)
     print("complete nn_index")
     # calculate P & n_match
     P = 0
     n_match = np.zeros((y_test.shape[0],))
     print("start calculate p...")
-    for i in range(index.shape[0]):
+    for i in range(buckets.shape[0]):
         label = y_train[buckets[i]]
         n_match[i] = np.sum(label == y_test[i])
         # P += 1 if n_match[i] > 0 else 0 
-        P += n_match[i] / k
+        P += n_match[i] / label.shape[0]
     print("complete calculate p")
     print(n_match)
     print("start save n_match...")
@@ -79,7 +80,7 @@ def ptopK(x_train, y_train, x_test, y_test, k = K):
         src = n_match
     )
     print("complete save n_match")
-    P /= index.shape[0]
+    P /= buckets.shape[0]
     return P
 
 """
@@ -90,8 +91,8 @@ def main():
     # set start_time
     start_time = timeit.default_timer()
     # get trainset & testset
-    x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
-    # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = DATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = DATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
     # remap x_train, x_test
     x_train_max, x_test_max = np.max(x_train), np.max(x_test)
     x_max = max(x_train_max, x_test_max)
