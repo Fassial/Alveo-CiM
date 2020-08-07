@@ -40,7 +40,8 @@ def ptopK(x_train, y_train, x_test, y_test, k = K):
     print("start build_index...")
     params = flann.build_index(
         x_train,
-        algorithm = "hierarchical",
+        # algorithm = "hierarchical",
+        algorithm = "lsh",
         target_precision = 0.9,
         log_level = "info"
     ); print(params)
