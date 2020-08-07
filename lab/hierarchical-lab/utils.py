@@ -68,3 +68,20 @@ def load_dataset(dirpath):
     )
     print("dataset loaded")
     return (x_train, y_train, x_test, y_test)
+
+"""
+remap:
+    remap src(matrix) to range
+    @params:
+        src(np.array)   : source matrix
+        _range(tuple)   : range to remap
+        src_max(int)    : normailization param
+    @rets:
+        dst(np.array)   : dest matrix
+"""
+def remap(src, _range, src_max = None):
+    if src_max == None: src_max = np.max(src)
+    _range_len = _range[1] - _range[0]
+    dst = src * _range_len / src_max
+    dst += _range[0]
+    return np.round(dst).astype(np.int32)

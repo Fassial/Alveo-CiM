@@ -18,6 +18,8 @@ PREDATASET = os.path.join(PREFIX, "predataset")
 # eval dir
 EVAL_DIR = os.path.join(".", "eval")
 SCORE_FILE = os.path.join(EVAL_DIR, "scores.csv")
+# remap params
+W = 8
 # flann-hierarchical params
 K = 10
 
@@ -85,11 +87,16 @@ def main():
     # get trainset & testset
     # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET)
     x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = DATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    # remap x_train, x_test
+    x_train_max, x_test_max = np.max(x_train), np.max(x_test)
+    x_max = max(x_train_max, x_test_max)
+    x_train_remap = utils.remap(x_train, (0, 2**W-1), x_max)
+    x_test_remap = utils.remap(x_test, (0, 2**W-1), x_max)
     # get ptopK
     p = ptopK(
-        x_train = x_train,
+        x_train = x_train_remap,
         y_train = y_train,
-        x_test = x_test,
+        x_test = x_test_remap,
         y_test = y_test,
         k = K
     )
