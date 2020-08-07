@@ -22,8 +22,6 @@ SCORE_FILE = os.path.join(EVAL_DIR, "scores.csv")
 W = 8
 DISTANCE_FUNCS = ["hamming", "euclidean", "true_euclidean", \
     "centred_euclidean", "cosine", "l1norm"]
-# ptopK params
-K = 10
 
 """
 ptopN:
@@ -33,11 +31,10 @@ ptopN:
         y_train(np.array)   : label of trainset
         x_test(np.array)    : feature of testset
         y_test(np.array)    : label of testset
-        k(int)              : number of check
     @rets:
         P(float)            : accuracy of classifier
 """
-def ptopK(x_train, y_train, x_test, y_test, k = K):
+def ptopK(x_train, y_train, x_test, y_test):
     # init lsh
     lsh_inst = lshash.LSHash(
         hash_size = W,
