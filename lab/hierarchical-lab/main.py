@@ -63,6 +63,7 @@ def ptopK(x_train, y_train, x_test, y_test, k = K):
     for i in range(index.shape[0]):
         label = y_train[index[i]]
         n_match[i] = np.sum(label == y_test[i])
+        # P += 1 if n_match[i] > 0 else 0 
         P += n_match[i] / k
     print("complete calculate p")
     print(n_match)
@@ -90,8 +91,8 @@ def main():
     # remap x_train, x_test
     x_train_max, x_test_max = np.max(x_train), np.max(x_test)
     x_max = max(x_train_max, x_test_max)
-    x_train_remap = utils.remap(x_train, (0, 2**W-1), x_max)
-    x_test_remap = utils.remap(x_test, (0, 2**W-1), x_max)
+    x_train_remap = utils.remap(x_train, (0, 2**W-1), x_max).astype(np.uint8); print(x_train_remap.shape, x_train_remap.dtype)
+    x_test_remap = utils.remap(x_test, (0, 2**W-1), x_max).astype(np.uint8); print(x_test_remap.shape, x_test_remap.dtype)
     # get ptopK
     p = ptopK(
         x_train = x_train_remap,
