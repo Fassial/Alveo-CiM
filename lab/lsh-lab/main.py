@@ -18,9 +18,11 @@ PREDATASET = os.path.join(PREFIX, "predataset")
 # eval dir
 EVAL_DIR = os.path.join(".", "eval")
 SCORE_FILE = os.path.join(EVAL_DIR, "scores.csv")
-# lsh params
+# remap params
 W = 8
-N_HASHTABLES = 16
+# lsh params
+HASH_SIZE = 256
+N_HASHTABLES = 64
 DISTANCE_FUNCS = ["hamming", "euclidean", "true_euclidean", \
     "centred_euclidean", "cosine", "l1norm"]
 # test params
@@ -42,7 +44,7 @@ ptopN:
 def ptopK(x_train, y_train, x_test, y_test, k = K, _ord = 2):
     # init lsh
     lsh_inst = lshash.LSHash(
-        hash_size = W,
+        hash_size = HASH_SIZE,
         input_dim = x_train.shape[1],
         num_hashtables = N_HASHTABLES
     )
@@ -68,13 +70,14 @@ def ptopK(x_train, y_train, x_test, y_test, k = K, _ord = 2):
     n_match = np.zeros((y_test.shape[0],))
     print("start calculate p...")
     for i in range(buckets.shape[0]):
-        index = list(buckets[i])
+        if i % 100 == 0: print("cycle:", i)
+        index = list(buckets[i])# ; print(len(index))
         feature, label = x_train[index], y_train[index]
         if label.shape[0] > k:
             # get dist
             dist = np.zeros((label.shape[0], ))
             for j in range(dist.shape[0]):
-                dist[i] = np.linalg.norm(
+                dist[j] = np.linalg.norm(
                     x_test[i] - feature[j],
                     ord = _ord
                 )
