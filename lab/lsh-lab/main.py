@@ -20,8 +20,11 @@ EVAL_DIR = os.path.join(".", "eval")
 SCORE_FILE = os.path.join(EVAL_DIR, "scores.csv")
 # lsh params
 W = 8
+N_HASHTABLES = 16
 DISTANCE_FUNCS = ["hamming", "euclidean", "true_euclidean", \
     "centred_euclidean", "cosine", "l1norm"]
+# test params
+K = 10
 
 """
 ptopN:
@@ -31,14 +34,16 @@ ptopN:
         y_train(np.array)   : label of trainset
         x_test(np.array)    : feature of testset
         y_test(np.array)    : label of testset
+        k(int)              : the number of top
     @rets:
         P(float)            : accuracy of classifier
 """
-def ptopK(x_train, y_train, x_test, y_test):
+def ptopK(x_train, y_train, x_test, y_test, k = K):
     # init lsh
     lsh_inst = lshash.LSHash(
         hash_size = W,
-        input_dim = x_train.shape[1]
+        input_dim = x_train.shape[1],
+        num_hashtables = N_HASHTABLES
     )
     # set dataset
     print("start build_index...")
@@ -52,16 +57,11 @@ def ptopK(x_train, y_train, x_test, y_test):
     print("start nn_index...")
     buckets = []
     for i in range(x_test.shape[0]):
-        start_time = timeit.default_timer()
+        if i % 100 == 0: print("cycle:", i)
         bucket = lsh_inst.query(
             query_point = x_test[i]
         )# ; print(bucket[0][0][1])
-        end_time = timeit.default_timer()
-        if i % 100 == 0: print("one query runs %.1fs" % (end_time-start_time))
-        start_time = timeit.default_timer()
         buckets.append([int(point[0][1]) for point in bucket])
-        end_time = timeit.default_timer()
-        if i % 100 == 0: print("one query runs %.1fs" % (end_time-start_time))
     buckets = np.array(buckets)
     print("complete nn_index")
     # calculate P & n_match
@@ -70,9 +70,12 @@ def ptopK(x_train, y_train, x_test, y_test):
     print("start calculate p...")
     for i in range(buckets.shape[0]):
         label = y_train[buckets[i]]
-        n_match[i] = np.sum(label == y_test[i])
-        # P += 1 if n_match[i] > 0 else 0 
-        P += n_match[i] / label.shape[0]
+        if label.shape[0] > k:
+            n_match[i] = np.sum(label[:k] == y_test[i])
+            P += n_match[i] / k
+        elif label.shape[0] > 0:
+            n_match[i] = np.sum(label == y_test[i])
+            P += n_match[i] / label.shape[0]
     print("complete calculate p")
     print(n_match)
     print("start save n_match...")
@@ -116,3 +119,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
