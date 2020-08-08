@@ -58,7 +58,7 @@ def ptopK(x_train, y_train, x_test, y_test, k = K):
         if i % 100 == 0: print("cycle:", i)
         bucket = lsh_inst.query(
             query_point = x_test[i]
-        )# ; print(bucket[0][0][1])
+        )
         buckets.append(bucket)
     buckets = np.array(buckets)
     print("complete nn_index")
@@ -67,7 +67,7 @@ def ptopK(x_train, y_train, x_test, y_test, k = K):
     n_match = np.zeros((y_test.shape[0],))
     print("start calculate p...")
     for i in range(buckets.shape[0]):
-        label = y_train[buckets[i]]
+        label = y_train[list(buckets[i])]
         if label.shape[0] > k:
             n_match[i] = np.sum(label[:k] == y_test[i])
             P += n_match[i] / k
@@ -95,8 +95,8 @@ def main():
     # set start_time
     start_time = timeit.default_timer()
     # get trainset & testset
-    x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
-    # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = DATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = DATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
     # remap x_train, x_test
     x_train_max, x_test_max = np.max(x_train), np.max(x_test)
     x_max = max(x_train_max, x_test_max)
