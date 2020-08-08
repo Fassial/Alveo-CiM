@@ -197,24 +197,26 @@ class LSHash(object):
 
         if isinstance(input_point, np.ndarray):
             dim = input_point.ndim
+            n_range = input_point.shape[0] if dim == 2 else 1
             input_point = input_point.tolist()
         elif isinstance(input_point, list):
             dim = np.array(input_point).ndim
+            n_range = np.array(input_point).shape[0] if dim == 2 else 1
 
         if extra_data:
-            value = (tuple(input_point), extra_data)
+            value = (np.arange(n_range).tolist(), extra_data)
         else:
-            value = tuple(input_point)
+            value = np.arange(n_range).tolist()
 
         if dim == 2:
             for i in range(len(input_point)):
                 for j, table in enumerate(self.hash_tables):
                     table.append_val(self._hash(self.uniform_planes[j], input_point[i]),
-                                     tuple(value[i]))
+                                     value[i])
         else:
             for i, table in enumerate(self.hash_tables):
                 table.append_val(self._hash(self.uniform_planes[i], input_point),
-                                 value)
+                                 value[0])
 
     def query(self, query_point, num_results=None, distance_func=None):
         """ Takes `query_point` which is either a tuple or a list of numbers,
@@ -275,9 +277,9 @@ class LSHash(object):
                 candidates.update(table.get_list(binary_hash))
 
         # rank candidates by distance function
-        candidates = [(ix, d_func(query_point, self._as_np_array(ix)))
-                      for ix in candidates]
-        candidates.sort(key=lambda x: x[1])
+        # candidates = [(ix, d_func(query_point, self._as_np_array(ix)))
+        #               for ix in candidates]
+        # candidates.sort(key=lambda x: x[1])
 
         return candidates[:num_results] if num_results else candidates
 

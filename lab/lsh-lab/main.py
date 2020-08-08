@@ -47,11 +47,9 @@ def ptopK(x_train, y_train, x_test, y_test, k = K):
     )
     # set dataset
     print("start build_index...")
-    for i in range(x_train.shape[0]):
-        lsh_inst.index(
-            input_point = x_train[i],
-            extra_data = str(int(y_train[i]))
-        )
+    lsh_inst.index(
+        input_point = x_train
+    )
     print("complete build_index")
     # get query result
     print("start nn_index...")
@@ -61,7 +59,7 @@ def ptopK(x_train, y_train, x_test, y_test, k = K):
         bucket = lsh_inst.query(
             query_point = x_test[i]
         )# ; print(bucket[0][0][1])
-        buckets.append([int(point[0][1]) for point in bucket])
+        buckets.append(bucket)
     buckets = np.array(buckets)
     print("complete nn_index")
     # calculate P & n_match
@@ -97,8 +95,8 @@ def main():
     # set start_time
     start_time = timeit.default_timer()
     # get trainset & testset
-    # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
-    x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = DATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = DATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
     # remap x_train, x_test
     x_train_max, x_test_max = np.max(x_train), np.max(x_test)
     x_max = max(x_train_max, x_test_max)
