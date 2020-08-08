@@ -35,10 +35,11 @@ ptopN:
         x_test(np.array)    : feature of testset
         y_test(np.array)    : label of testset
         k(int)              : the number of top
+        _ord(int)           : use `L(_ord)`-distance to measure relation
     @rets:
         P(float)            : accuracy of classifier
 """
-def ptopK(x_train, y_train, x_test, y_test, k = K):
+def ptopK(x_train, y_train, x_test, y_test, k = K, _ord = 2):
     # init lsh
     lsh_inst = lshash.LSHash(
         hash_size = W,
@@ -67,9 +68,22 @@ def ptopK(x_train, y_train, x_test, y_test, k = K):
     n_match = np.zeros((y_test.shape[0],))
     print("start calculate p...")
     for i in range(buckets.shape[0]):
-        label = y_train[list(buckets[i])]
+        index = list(buckets[i])
+        feature, label = x_train[index], y_train[index]
         if label.shape[0] > k:
-            n_match[i] = np.sum(label[:k] == y_test[i])
+            # get dist
+            dist = np.zeros((label.shape[0], ))
+            for j in range(dist.shape[0]):
+                dist[i] = np.linalg.norm(
+                    x_test[i] - feature[j],
+                    ord = _ord
+                )
+            # sort dist
+            k_index = np.argsort(dist)[:k]
+            index = index[k_index]
+            # get corresponding label
+            label = x_train[index]
+            n_match[i] = np.sum(label == y_test[i])
             P += n_match[i] / k
         elif label.shape[0] > 0:
             n_match[i] = np.sum(label == y_test[i])
@@ -95,8 +109,8 @@ def main():
     # set start_time
     start_time = timeit.default_timer()
     # get trainset & testset
-    # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
-    x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = DATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = DATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
     # remap x_train, x_test
     x_train_max, x_test_max = np.max(x_train), np.max(x_test)
     x_max = max(x_train_max, x_test_max)
