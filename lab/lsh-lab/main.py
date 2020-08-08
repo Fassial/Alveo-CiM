@@ -80,9 +80,9 @@ def ptopK(x_train, y_train, x_test, y_test, k = K, _ord = 2):
                 )
             # sort dist
             k_index = np.argsort(dist)[:k]
-            index = index[k_index]
+            index = np.array(index)[k_index].tolist()
             # get corresponding label
-            label = x_train[index]
+            label = y_train[index]
             n_match[i] = np.sum(label == y_test[i])
             P += n_match[i] / k
         elif label.shape[0] > 0:
@@ -109,8 +109,8 @@ def main():
     # set start_time
     start_time = timeit.default_timer()
     # get trainset & testset
-    x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
-    # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = DATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = DATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
     # remap x_train, x_test
     x_train_max, x_test_max = np.max(x_train), np.max(x_test)
     x_max = max(x_train_max, x_test_max)
