@@ -22,7 +22,7 @@ SCORE_FILE = os.path.join(EVAL_DIR, "scores.csv")
 W = 8
 # lsh params
 HASH_SIZE = 256
-N_HASHTABLES = 64
+N_HASHTABLES = 32
 DISTANCE_FUNCS = ["hamming", "euclidean", "true_euclidean", \
     "centred_euclidean", "cosine", "l1norm"]
 # test params
@@ -56,14 +56,18 @@ def ptopK(x_train, y_train, x_test, y_test, k = K, _ord = 2):
     print("complete build_index")
     # get query result
     print("start nn_index...")
-    buckets = []
+    buckets, bucket_size = [], []
     for i in range(x_test.shape[0]):
         if i % 100 == 0: print("cycle:", i)
         bucket = lsh_inst.query(
             query_point = x_test[i]
         )
-        buckets.append(bucket)
+        buckets.append(bucket); bucket_size.append(len(bucket))
     buckets = np.array(buckets)
+    utils.store_data(
+        filename = "bucket-size.csv",
+        src = bucket_size
+    )
     print("complete nn_index")
     # calculate P & n_match
     P = 0
