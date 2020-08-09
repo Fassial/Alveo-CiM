@@ -53,6 +53,9 @@ def ptopK(x_train, y_train, x_test, y_test, k = K, _ord = 2):
     lsh_inst.index(
         input_point = x_train
     )
+    bucket_cap = lsh_inst.get_bucket_cap()
+    mean_bucket_cap = [np.mean(i) for i in bucket_cap]
+    print("mean bucket cap:", np.mean(bucket_cap))
     print("complete build_index")
     # get query result
     print("start nn_index...")
@@ -121,8 +124,10 @@ def main():
     # remap x_train, x_test
     x_train_max, x_test_max = np.max(x_train), np.max(x_test)
     x_max = max(x_train_max, x_test_max)
-    x_train_remap = utils.remap(x_train, (0, 2**W-1), x_max).astype(np.uint8); print(x_train_remap.shape, x_train_remap.dtype)
-    x_test_remap = utils.remap(x_test, (0, 2**W-1), x_max).astype(np.uint8); print(x_test_remap.shape, x_test_remap.dtype)
+    # x_train_remap = utils.remap(x_train, (0, 2**W-1), x_max).astype(np.uint8); print(x_train_remap.shape, x_train_remap.dtype)
+    # x_test_remap = utils.remap(x_test, (0, 2**W-1), x_max).astype(np.uint8); print(x_test_remap.shape, x_test_remap.dtype)
+    x_train_remap = x_train
+    x_test_remap = x_test
     # get ptopK
     p = ptopK(
         x_train = x_train_remap,

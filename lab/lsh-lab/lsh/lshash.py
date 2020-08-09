@@ -283,6 +283,12 @@ class LSHash(object):
 
         return candidates[:num_results] if num_results else candidates
 
+    def get_bucket_cap(self):
+        bucket_cap = []
+        for i, table in enumerate(self.hash_tables):
+            bucket_cap.append(table.get_bucket_cap())
+        return bucket_cap
+
     ### distance functions
 
     @staticmethod

@@ -60,6 +60,9 @@ class BaseStorage(object):
         """
         raise NotImplementedError
 
+    def get_bucket_cap(self):
+        raise NotImplementedError
+
 
 class InMemoryStorage(BaseStorage):
     def __init__(self, config):
@@ -80,6 +83,12 @@ class InMemoryStorage(BaseStorage):
 
     def get_list(self, key):
         return self.storage.get(key, [])
+
+    def get_bucket_cap(self):
+        bucket_cap = []
+        for key in self.storage.keys():
+            bucket_cap.append(len(self.storage[key]))
+        return bucket_cap
 
 
 class RedisStorage(BaseStorage):
