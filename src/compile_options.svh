@@ -17,8 +17,15 @@
 // define associate to COMPILE_FULL
 
 // define not associate to COMPILE_FULL
-// define for cim
+`define FEATURE_WIDTH       32
+// define for nmc
 `define ALU_KIND            0
+`define N_NMC               8
+`define N_NMC_CELL          128
+`define RESULT_WIDTH        32
+`define NWR_FIFO_DEPTH      8
+`define NQR_FIFO_DEPTH      16
+`define NMC_COUNT_THRES     4
 // define for cam
 `define KEY_WIDTH           32
 `define KEY_DEPTH           16
