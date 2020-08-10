@@ -1,12 +1,12 @@
-// test ccg
-`include "test_cim.svh"
+// test nmc
+`include "test_nmc.svh"
 
-module test_ccg #(
+module test_nmc #(
     // module parameter
-    parameter   N_GROUP     =   12,
-    parameter   DATA_WIDTH  =   32,
-    parameter   ALU_KIND    =   0,
-    localparam  COUNT_WIDTH =   $clog2(N_GROUP) + 1
+    parameter   N_NMC_CELL      =   `N_NMC_CELL,
+    parameter   ALU_KIND        =   `ALU_KIND,
+    parameter   NWR_FIFO_DEPTH  =   `NWR_FIFO_DEPTH,
+    parameter   NQR_FIFO_DEPTH  =   `NQR_FIFO_DEPTH
 ) (
 
 );
@@ -19,24 +19,33 @@ always_ff @ (posedge clk) begin
 end
 
 // interface define
-logic[DATA_WIDTH-1:0] w_i, b_i;
-logic update;
-logic[DATA_WIDTH-1:0][N_GROUP-1:0] data_o;
+nmc_wr_req_t nmc_wr_req;
+logic nwr_push, nwr_full;
+nmc_qr_req_t nmc_qr_req;
+logic nqr_push, nqr_full;
+logic ready;
+nmc_qr_resp_t nmc_qr_resp;
 // inst module
-cim_cell_group #(
-    .N_GROUP    ( N_GROUP       ),
-    .DATA_WIDTH ( DATA_WIDTH    ),
-    .ALU_KIND   ( ALU_KIND      )
-) cim_cell_group_inst (
+nmc #(
+    .N_NMC_CELL     ( N_NMC_CELL        ),
+    .ALU_KIND       ( ALU_KIND          ),
+    .NWR_FIFO_DEPTH ( NWR_FIFO_DEPTH    ),
+    .NQR_FIFO_DEPTH ( NQR_FIFO_DEPTH    )
+) nmc_inst (
     // external signals
     .clk,
     .rst,
-    // data w & b
-    .w_i,
-    .b_i,
-    .update,
-    // data_o
-    .data_o
+    // nmc_wr_req
+    .nmc_wr_req,
+    .nwr_push,
+    .nwr_full,
+    // nmc_qr_req
+    .nmc_qr_req,
+    .nqr_push,
+    .nqr_full,
+    // nmc_qr_resp
+    .ready,
+    .nmc_qr_resp
 );
 
 // record
@@ -80,25 +89,29 @@ task unittest_(
     req_counter = 0;
     cycle = 0;
     // reset control signals
-    update = 1'b0;
+    nwr_push = 1'b0;
+    nqr_push = 1'b0;
     while (!$feof(fans)) begin
         // wait negedge clk to ensure line_data already update
         @ (negedge clk);
         cycle = cycle + 1;
 
         // reset control signals
-        update = 1'b0;
+        nwr_push = 1'b0;
+        nqr_push = 1'b0;
 
         // check ans
-        begin
-            $sformat(out, {"%x"}, data_o);
+        if (nmc_qr_resp.valid) begin
+            $sformat(out, {"%x-%x"}, nmc_qr_resp.found, nmc_qr_resp.result);
             judge(fans, ans_counter, out);
             ans_counter = ans_counter + 1;
         end
 
         // issue req
         if (!$feof(freq)) begin
-            $fscanf(freq, "%x %x %x %x\n", w_i, b_i, update);
+            nmc_qr_req.id = '0;
+            nmc_qr_req.id_vld = 1'b0;
+            $fscanf(freq, "%x %x %x %x %x %x\n", nwr_push, nmc_wr_req.addr, nmc_wr_req.entry, nqr_push, nmc_qr_req.addr, nmc_qr_req.feature);
             req_counter = req_counter + 1;
         end
     end
@@ -116,7 +129,7 @@ endtask
 initial begin
     wait(rst == 1'b0);
     summary = "";
-    unittest("ccg_simple");
+    unittest("nmc_simple");
     $display("summary: %0s", summary);
     $stop;
 end
