@@ -6,7 +6,9 @@ module test_nmc #(
     parameter   N_NMC_CELL      =   `N_NMC_CELL,
     parameter   ALU_KIND        =   `ALU_KIND,
     parameter   NWR_FIFO_DEPTH  =   `NWR_FIFO_DEPTH,
-    parameter   NQR_FIFO_DEPTH  =   `NQR_FIFO_DEPTH
+    parameter   NQR_FIFO_DEPTH  =   `NQR_FIFO_DEPTH,
+    // threshold
+    parameter   NMC_COUNT_THRES =   `NMC_COUNT_THRES
 ) (
 
 );
@@ -30,7 +32,8 @@ nmc #(
     .N_NMC_CELL     ( N_NMC_CELL        ),
     .ALU_KIND       ( ALU_KIND          ),
     .NWR_FIFO_DEPTH ( NWR_FIFO_DEPTH    ),
-    .NQR_FIFO_DEPTH ( NQR_FIFO_DEPTH    )
+    .NQR_FIFO_DEPTH ( NQR_FIFO_DEPTH    ),
+    .NMC_COUNT_THRES( NMC_COUNT_THRES   )
 ) nmc_inst (
     // external signals
     .clk,
