@@ -133,6 +133,7 @@ initial begin
     wait(rst == 1'b0);
     summary = "";
     unittest("nmc_simple");
+    unittest("nmc_random");
     $display("summary: %0s", summary);
     $stop;
 end
