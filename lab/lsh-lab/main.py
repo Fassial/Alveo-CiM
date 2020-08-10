@@ -53,10 +53,7 @@ def ptopK(x_train, y_train, x_test, y_test, k = K, _ord = 2):
     lsh_inst.index(
         input_point = x_train
     )
-    bucket_cap = lsh_inst.get_bucket_cap()
-    print([len(bucket) for bucket in bucket_cap])
-    mean_bucket_cap = [np.mean(i) for i in bucket_cap]
-    print("mean bucket cap:", np.mean(mean_bucket_cap))
+    lsh_buckets = lsh_inst.get_buckets(); print("lsh_buckets:\n", lsh_buckets)
     print("complete build_index")
     # get query result
     print("start nn_index...")
@@ -95,10 +92,10 @@ def ptopK(x_train, y_train, x_test, y_test, k = K, _ord = 2):
             # get corresponding label
             label = y_train[index]
             n_match[i] = np.sum(label == y_test[i])
-            P += n_match[i] / k
+            P += 1 if n_match[i] >= 1 else 0
         elif label.shape[0] > 0:
             n_match[i] = np.sum(label == y_test[i])
-            P += n_match[i] / label.shape[0]
+            P += 1 if n_match[i] >= 1 else 0
     print("complete calculate p")
     print(n_match)
     print("start save n_match...")

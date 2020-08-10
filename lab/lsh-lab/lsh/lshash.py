@@ -289,6 +289,12 @@ class LSHash(object):
             bucket_cap.append(table.get_bucket_cap())
         return bucket_cap
 
+    def get_buckets(self):
+        buckets = []
+        for i, table in enumerate(self.hash_tables):
+            buckets.append(table.get_buckets())
+        return buckets
+
     ### distance functions
 
     @staticmethod
