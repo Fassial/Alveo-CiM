@@ -33,7 +33,7 @@ module nmc #(
 typedef logic[$clog2(NWR_FIFO_DEPTH)-1:0] nwr_addr_t;
 typedef logic[$clog2(NQR_FIFO_DEPTH)-1:0] nqr_addr_t;
 // define 
-typedef logic[$clog2($bits(feature_t))-1:0] feature_count_t;
+typedef logic[$clog2($bits(feature_t)):0] feature_count_t;
 
 // state
 nmc_state_t state, state_n;
@@ -96,15 +96,14 @@ assign nmc_wr_req_r = nmc_wr_req_n;
 always_comb begin
     // default
     nmc_qr_req_n = nmc_qr_req_r;
-    unique case (state)
+    case (state)
         NMC_IDLE: nmc_qr_req_n = nqr_fifo_o;
-        NMC_QUERY: begin
-            nmc_qr_req_n.addr = nmc_qr_req_r.addr + 1'b1;
+        NMC_QUERY:
             if (~nmc_qr_req_r.id_vld) begin
                 nmc_qr_req_n.id = nmc_rddata.id;
                 nmc_qr_req_n.id_vld = 1'b1;
             end
-        end
+        NMC_COUNT: if (cb_count_vld) nmc_qr_req_n.addr = nmc_qr_req_r.addr + 1'b1;
     endcase
 end
 always_ff @ (posedge clk) begin
@@ -116,7 +115,7 @@ end
 // set nmc_qr_resp_n
 always_comb begin
     nmc_qr_resp_n = '0;
-    unique case (state)
+    case (state)
         NMC_QUERY:
             if (nmc_rddata.id != nmc_qr_req_r.id && nmc_qr_req_r.id_vld) begin
                 nmc_qr_resp_n.valid = 1'b1;

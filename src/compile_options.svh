@@ -19,7 +19,7 @@
 // define not associate to COMPILE_FULL
 `define FEATURE_WIDTH       32
 // define for nmc
-`define ALU_KIND            0
+`define ALU_KIND            2
 `define N_NMC               8
 `define N_NMC_CELL          128
 `define RESULT_WIDTH        32

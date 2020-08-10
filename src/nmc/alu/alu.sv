@@ -37,6 +37,17 @@ end else if (ALU_KIND == 1) begin
         // data_o
         .c_o    ( alu_c )
     );
+end else if (ALU_KIND == 2) begin
+    xor_unit #(
+        .DATA_WIDTH ( DATA_WIDTH    ),
+        .ALU_KIND   ( ALU_KIND      )
+    ) xor_unit_inst (
+        // data_i
+        .a_i    ( alu_a ),
+        .b_i    ( alu_b ),
+        // data_o
+        .c_o    ( alu_c )
+    );
 end else begin
     // set '0
     assign alu_c = '0;

@@ -40,7 +40,7 @@ end
 // set data_n
 always_comb begin
     data_n = data;
-    unique case (state)
+    case (state)
         CB_IDLE: data_n = data_i;
         CB_COUNT: data_n = data ^ data_lowest;
     endcase
@@ -56,7 +56,7 @@ assign data_lowest = data & (~data + 1'b1);
 // set count_n
 always_comb begin
     count_n = count;
-    unique case (state)
+    case (state)
         CB_IDLE: if (data_vld) count_n = '0;
         CB_COUNT: if (|data_lowest) count_n = count + 1'b1;
     endcase
