@@ -5,7 +5,7 @@
     This header defines common data structrue & constants in alu module
 */
 
-// cim defs
-`include "cim_defs.svh"
+// nmc defs
+`include "nmc_defs.svh"
 
 `endif
