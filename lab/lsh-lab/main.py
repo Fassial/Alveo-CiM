@@ -21,7 +21,7 @@ SCORE_FILE = os.path.join(EVAL_DIR, "scores.csv")
 # remap params
 W = 8
 # lsh params
-HASH_SIZE = 256
+HASH_SIZE = 56
 N_HASHTABLES = 32
 DISTANCE_FUNCS = ["hamming", "euclidean", "true_euclidean", \
     "centred_euclidean", "cosine", "l1norm"]
@@ -54,8 +54,9 @@ def ptopK(x_train, y_train, x_test, y_test, k = K, _ord = 2):
         input_point = x_train
     )
     bucket_cap = lsh_inst.get_bucket_cap()
+    print([len(bucket) for bucket in bucket_cap])
     mean_bucket_cap = [np.mean(i) for i in bucket_cap]
-    print("mean bucket cap:", np.mean(bucket_cap))
+    print("mean bucket cap:", np.mean(mean_bucket_cap))
     print("complete build_index")
     # get query result
     print("start nn_index...")
