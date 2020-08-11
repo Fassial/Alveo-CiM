@@ -21,8 +21,8 @@ SCORE_FILE = os.path.join(EVAL_DIR, "scores.csv")
 # remap params
 W = 8
 # lsh params
-HASH_SIZE = 56
-N_HASHTABLES = 32
+HASH_SIZE = 64
+N_HASHTABLES = 16
 DISTANCE_FUNCS = ["hamming", "euclidean", "true_euclidean", \
     "centred_euclidean", "cosine", "l1norm"]
 # test params
@@ -41,25 +41,25 @@ ptopN:
     @rets:
         P(float)            : accuracy of classifier
 """
-def ptopK(x_train, y_train, x_test, y_test, k = K, _ord = 2):
+def ptopK(x_train, y_train, x_test, y_test, k = K, n_hashtables = N_HASHTABLES, hash_size = HASH_SIZE, _ord = 2):
     # init lsh
     lsh_inst = lshash.LSHash(
-        hash_size = HASH_SIZE,
+        hash_size = hash_size,
         input_dim = x_train.shape[1],
-        num_hashtables = N_HASHTABLES
+        num_hashtables = n_hashtables
     )
     # set dataset
-    print("start build_index...")
+    # print("start build_index...")
     lsh_inst.index(
         input_point = x_train
     )
-    lsh_buckets = lsh_inst.get_buckets(); print("lsh_buckets:\n", lsh_buckets)
-    print("complete build_index")
+    lsh_buckets = lsh_inst.get_buckets()# ; print("lsh_buckets:\n", lsh_buckets)
+    # print("complete build_index")
     # get query result
-    print("start nn_index...")
+    # print("start nn_index...")
     buckets, bucket_size = [], []
     for i in range(x_test.shape[0]):
-        if i % 100 == 0: print("cycle:", i)
+        # if i % 100 == 0: print("cycle:", i)
         bucket = lsh_inst.query(
             query_point = x_test[i]
         )
@@ -69,13 +69,13 @@ def ptopK(x_train, y_train, x_test, y_test, k = K, _ord = 2):
         filename = "bucket-size.csv",
         src = bucket_size
     )
-    print("complete nn_index")
+    # print("complete nn_index")
     # calculate P & n_match
     P = 0
     n_match = np.zeros((y_test.shape[0],))
-    print("start calculate p...")
+    # print("start calculate p...")
     for i in range(buckets.shape[0]):
-        if i % 100 == 0: print("cycle:", i)
+        # if i % 100 == 0: print("cycle:", i)
         index = list(buckets[i])# ; print(len(index))
         feature, label = x_train[index], y_train[index]
         if label.shape[0] > k:
@@ -96,17 +96,18 @@ def ptopK(x_train, y_train, x_test, y_test, k = K, _ord = 2):
         elif label.shape[0] > 0:
             n_match[i] = np.sum(label == y_test[i])
             P += 1 if n_match[i] >= 1 else 0
-    print("complete calculate p")
+    # print("complete calculate p")
     print(n_match)
-    print("start save n_match...")
+    # print("start save n_match...")
     if not os.path.exists(EVAL_DIR): os.mkdir(EVAL_DIR)
     if os.path.exists(SCORE_FILE): os.remove(SCORE_FILE)
     utils.store_data(
         filename = SCORE_FILE,
         src = n_match
     )
-    print("complete save n_match")
+    # print("complete save n_match")
     P /= buckets.shape[0]
+    print(n_hashtables, hash_size, P, np.mean(bucket_size))
     return P
 
 """
@@ -126,15 +127,21 @@ def main():
     # x_test_remap = utils.remap(x_test, (0, 2**W-1), x_max).astype(np.uint8); print(x_test_remap.shape, x_test_remap.dtype)
     x_train_remap = x_train
     x_test_remap = x_test
-    # get ptopK
-    p = ptopK(
-        x_train = x_train_remap,
-        y_train = y_train,
-        x_test = x_test_remap,
-        y_test = y_test,
-        k = K
-    )
-    print("ptopK: %.2f%%" % (p*100))
+    n_hashtables_lst = [2,4,6,8,10,12,14,16]
+    hash_size_lst = [56,64,72,80,88,96,104,112,120,128]
+    for n_hashtables in n_hashtables_lst:
+        for hash_size in hash_size_lst:
+            # get ptopK
+            p = ptopK(
+                x_train = x_train_remap,
+                y_train = y_train,
+                x_test = x_test_remap,
+                y_test = y_test,
+                k = K,
+                n_hashtables = n_hashtables,
+                hash_size = hash_size
+            )
+    # print("ptopK: %.2f%%" % (p*100))
     # set end_time
     end_time = timeit.default_timer()
     print("main runs for %.1fs" % (end_time-start_time))
