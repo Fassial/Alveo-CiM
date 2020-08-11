@@ -53,7 +53,7 @@ def ptopK(x_train, y_train, x_test, y_test, k = K, n_hashtables = N_HASHTABLES, 
     lsh_inst.index(
         input_point = x_train
     )
-    lsh_buckets = lsh_inst.get_buckets()# ; print("lsh_buckets:\n", lsh_buckets)
+    lsh_buckets = lsh_inst.get_buckets(); print("lsh_buckets:", lsh_buckets)
     # print("complete build_index")
     # get query result
     # print("start nn_index...")
@@ -118,8 +118,8 @@ def main():
     # set start_time
     start_time = timeit.default_timer()
     # get trainset & testset
-    # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
-    x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = DATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = DATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
     # remap x_train, x_test
     x_train_max, x_test_max = np.max(x_train), np.max(x_test)
     x_max = max(x_train_max, x_test_max)
@@ -127,8 +127,8 @@ def main():
     # x_test_remap = utils.remap(x_test, (0, 2**W-1), x_max).astype(np.uint8); print(x_test_remap.shape, x_test_remap.dtype)
     x_train_remap = x_train
     x_test_remap = x_test
-    n_hashtables_lst = [2,4,6,8,10,12,14,16]
-    hash_size_lst = [56,64,72,80,88,96,104,112,120,128]
+    n_hashtables_lst = [N_HASHTABLES]# [2,4,6,8,10,12,14,16]
+    hash_size_lst = [HASH_SIZE]# [56,64,72,80,88,96,104,112,120,128]
     for n_hashtables in n_hashtables_lst:
         for hash_size in hash_size_lst:
             # get ptopK
