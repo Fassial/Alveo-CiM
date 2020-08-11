@@ -431,24 +431,96 @@ def ptopN(x_train, y_train, x_test, y_test, n_top = N_TOP):
     P /= n_test
     return P
 
+def _get_index(points, querys, h = 16, k = 10, _ord = 2):
+    # init indexes
+    indexes = []
+    # set indexes
+    for i in range(querys.shape[0]):
+        if i % 100 == 0: print("cycle:", i)
+        index = []
+        for j in range(points.shape[0]):
+            diff = np.abs(points[j] - querys[i])
+            if (diff < h).all(): index.append(i)
+        if len(index) > k:
+            query = querys[i]
+            dist = np.zeros((len(index),))
+            for i in range(dist.shape[0]):
+                dist[i] = np.linalg.norm(
+                    query - self.points[i],
+                    ord = _ord
+                )
+            # sort dist
+            k_index = np.argsort(dist)[:k]
+            # get index
+            index = np.array(index)[k_index].tolist()
+        indexes.append(index)
+    return indexes
+
 """
 main:
     main func
 """
-def main():
-    # split_dataset()
-    # save_encodeset()
-    # get_nmatch()
-    get_nmatch2()
-    """
-    P = ptopN(
-        x_train = x_train,
-        y_train = y_train.reshape(-1, 1),
-        x_test = x_test,
-        y_test = y_test.reshape(-1, 1)
-    )
-    print("P@top" + str(N_TOP) + ":", str(P))
-    """
+def main(k = 10):
+    mainH = 4
+    # get trainset & testset
+    # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    import pandas as pd
+    from sklearn.model_selection import train_test_split
+    data_file = os.path.join(".", "renedataset", 'pc_coords_full_0721.csv')
+    label_file = os.path.join(".", "renedataset", 'global_label_full_0721.csv')
+    all_feature = pd.read_csv(data_file, encoding='utf-8', engine='python', header=None)
+    all_feature.drop([0], axis=1, inplace=True)
+    all_label = pd.read_csv(label_file, encoding='utf-8', engine='python', header=None)
+    all_label.drop([0], axis=1, inplace=True)
+
+    all_feature = np.array(all_feature)
+    all_label = np.array(all_label).reshape(-1)
+    labels = np.unique(all_label)
+    print (all_feature.shape)
+    print (all_label.shape)
+    print (labels.shape)
+    train_feature = []
+    db_label = []
+    test_feature = []
+    query_label = []
+    for i in range(len(labels)):
+        idx = np.where(all_label==labels[i])[0]
+        if len(idx) > 1:
+            X_train, X_test, y_train, y_test = train_test_split(all_feature[idx,:], all_label[idx],test_size=0.15, random_state=0)
+            point = int(X_train.shape[0]*0.42)
+            if point <= 0:
+                point = 1
+            train_feature.extend(X_train[0:point,:].reshape(-1, all_feature.shape[1]))
+            db_label.extend(y_train[0:point])
+            test_feature.extend(X_test)
+            query_label.extend(y_test)
+    train_feature = np.array(train_feature).reshape(-1, all_feature.shape[1])
+    test_feature = np.array(test_feature).reshape(-1, all_feature.shape[1])
+    db_label = np.array(db_label).reshape(-1, )
+    query_label = np.array(query_label).reshape(-1, )
+    # get max
+    train_feature_max = np.max(train_feature)
+    test_feature_max = np.max(test_feature)
+    feature_max = max(train_feature_max, test_feature_max)
+    # remap trainset to Z
+    train_feature_remap = utils.remap(train_feature, (0, 2**W-1), feature_max)
+    # remap testset to Z
+    test_feature_remap = utils.remap(test_feature, (0, 2**W-1), feature_max)
+    # get indexes
+    indexes = _get_index(train_feature_remap, test_feature_remap, h = mainH, k = k)
+    # get P_count & P
+    P = 0
+    P_count = 0
+    for i in range(len(indexes)):
+        index = indexes[i]
+        if len(index) != 0:
+            P_count += 1
+            label = query_label[i]
+            match_label = db_label[index]
+            P += 1 if np.sum(match_label == label) > 0 else 0
+    print(str((P/P_count)) + "," + str((P_count/len(indexes))))
 
 if __name__ == "__main__":
-    main()
+    k_lst = [1,2,3,4,5,6,7,8,9,10]
+    for k in k_lst:
+        main(k = k)
