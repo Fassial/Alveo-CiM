@@ -440,7 +440,7 @@ def _get_index(points, querys, h = 16, k = 10, _ord = 2):
         index = []
         for j in range(points.shape[0]):
             diff = np.abs(points[j] - querys[i])
-            if (diff < h).all(): index.append(i)
+            if (diff < h).all(): index.append(j)
         if len(index) > k:
             query = querys[i]
             dist = np.zeros((len(index),))
