@@ -8,7 +8,7 @@ module test_nmc #(
     parameter   NWR_FIFO_DEPTH  =   `NWR_FIFO_DEPTH,
     parameter   NQR_FIFO_DEPTH  =   `NQR_FIFO_DEPTH,
     // threshold
-    parameter   NMC_COUNT_THRES =   `NMC_COUNT_THRES
+    parameter   NMC_CAL_THRES   =   `NMC_CAL_THRES
 ) (
 
 );
@@ -33,7 +33,7 @@ nmc #(
     .ALU_KIND       ( ALU_KIND          ),
     .NWR_FIFO_DEPTH ( NWR_FIFO_DEPTH    ),
     .NQR_FIFO_DEPTH ( NQR_FIFO_DEPTH    ),
-    .NMC_COUNT_THRES( NMC_COUNT_THRES   )
+    .NMC_CAL_THRES  ( NMC_CAL_THRES     )
 ) nmc_inst (
     // external signals
     .clk,
@@ -111,10 +111,10 @@ task unittest_(
         end
 
         // issue req
-        if (!$feof(freq)) begin
+        if (!$feof(freq) && ready) begin
             nmc_qr_req.id = '0;
             nmc_qr_req.id_vld = 1'b0;
-            $fscanf(freq, "%x %x %x %x %x %x\n", nwr_push, nmc_wr_req.addr, nmc_wr_req.entry, nqr_push, nmc_qr_req.addr, nmc_qr_req.feature);
+            $fscanf(freq, "%x %x %x %x %x %x %x %x\n", nwr_push, nmc_wr_req.addr, nmc_wr_req.entry.id, nmc_wr_req.entry.feature, nmc_wr_req.entry.result, nqr_push, nmc_qr_req.addr, nmc_qr_req.feature);
             req_counter = req_counter + 1;
         end
     end
@@ -133,7 +133,7 @@ initial begin
     wait(rst == 1'b0);
     summary = "";
     unittest("nmc_simple");
-    unittest("nmc_random");
+    // unittest("nmc_random");
     $display("summary: %0s", summary);
     $stop;
 end
