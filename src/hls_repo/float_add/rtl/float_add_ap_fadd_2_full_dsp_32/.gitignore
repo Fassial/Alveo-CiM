@@ -1,0 +1,7 @@
+# dir
+/hdl
+/sim
+/synth
+
+# file
+*.xml
