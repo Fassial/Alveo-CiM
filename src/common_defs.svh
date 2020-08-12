@@ -14,9 +14,10 @@
 
 // common struct
 typedef logic[31:0] uint32_t;
+typedef logic[31:0] float_t;
 
 // def struct
-typedef logic[`FEATURE_WIDTH-1:0]       feature_t;
+typedef float_t[`N_FEATURE-1:0]         feature_t;
 // def struct for cam
 typedef logic[$clog2(`KEY_DEPTH)-1:0]   cam_addr_t;
 typedef logic[`KEY_WIDTH-1:0]           cam_key_t;
