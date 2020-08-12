@@ -456,6 +456,68 @@ def _get_index(points, querys, h = 16, k = 10, _ord = 2):
         indexes.append(index)
     return indexes
 
+def get_rene():
+    # get trainset & testset
+    # x_train, y_train, x_test, y_test = utils.load_dataset(dirpath = PREDATASET); print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+    import pandas as pd
+    from sklearn.model_selection import train_test_split
+    data_file = os.path.join(".", "renedataset", 'pc_coords_full_0721.csv')
+    label_file = os.path.join(".", "renedataset", 'global_label_full_0721.csv')
+    all_feature = pd.read_csv(data_file, encoding='utf-8', engine='python', header=None)
+    all_feature.drop([0], axis=1, inplace=True)
+    all_label = pd.read_csv(label_file, encoding='utf-8', engine='python', header=None)
+    all_label.drop([0], axis=1, inplace=True)
+
+    all_feature = np.array(all_feature)
+    all_label = np.array(all_label).reshape(-1)
+    labels = np.unique(all_label)
+    print (all_feature.shape)
+    print (all_label.shape)
+    print (labels.shape)
+    train_feature = []
+    db_label = []
+    test_feature = []
+    query_label = []
+    for i in range(len(labels)):
+        idx = np.where(all_label==labels[i])[0]
+        if len(idx) > 1:
+            X_train, X_test, y_train, y_test = train_test_split(all_feature[idx,:], all_label[idx],test_size=0.3, random_state=0)
+            point = int(X_train.shape[0]*1)
+            if point <= 0:
+                point = 1
+            train_feature.extend(X_train[0:point,:].reshape(-1, all_feature.shape[1]))
+            db_label.extend(y_train[0:point])
+            test_feature.extend(X_test)
+            query_label.extend(y_test)
+    train_feature = np.array(train_feature).reshape(-1, all_feature.shape[1])
+    test_feature = np.array(test_feature).reshape(-1, all_feature.shape[1])
+    db_label = np.array(db_label).reshape(-1, )
+    query_label = np.array(query_label).reshape(-1, )
+    # get max
+    train_feature_max = np.max(train_feature)
+    test_feature_max = np.max(test_feature)
+    feature_max = max(train_feature_max, test_feature_max)
+    # remap trainset to Z
+    train_feature_remap = utils.remap(train_feature, (0, 2**W-1), feature_max)
+    # remap testset to Z
+    test_feature_remap = utils.remap(test_feature, (0, 2**W-1), feature_max)
+    # get encode
+    train_feature_encode = utils.encode(train_feature_remap, train_feature_remap[0].shape[0], W, HMAX); train_feature_encode = train_feature_encode.reshape((train_feature_encode.shape[0], -1))
+    test_feature_encode = utils.encode(test_feature_remap, test_feature_remap[0].shape[0], W, HMAX); test_feature_encode = test_feature_encode.reshape((test_feature_encode.shape[0], -1))
+    # get str encode
+    all_encode = []
+    for i in range(train_feature_encode.shape[0]):
+        reneencode = ""
+        for j in range(train_feature_encode.shape[1]):
+            reneencode += str(train_feature_encode[i, j])
+        all_encode.append(reneencode)
+    for i in range(test_feature_encode.shape[0]):
+        reneencode = ""
+        for j in range(test_feature_encode.shape[1]):
+            reneencode += str(test_feature_encode[i, j])
+        all_encode.append(reneencode)
+    all_encode_counter = Counter(all_encode); print(all_encode_counter)
+
 """
 main:
     main func
@@ -521,6 +583,4 @@ def main(k = 10):
     print(str((P/P_count)) + "," + str((P_count/len(indexes))))
 
 if __name__ == "__main__":
-    k_lst = [1,2,3,4,5,6,7,8,9,10]
-    for k in k_lst:
-        main(k = k)
+    get_rene()
