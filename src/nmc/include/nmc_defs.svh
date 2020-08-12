@@ -20,7 +20,7 @@ endfunction
 typedef enum logic [2:0] {
     NMC_IDLE,
     NMC_QUERY,
-    NMC_COUNT,
+    NMC_CAL,
     NMC_RES,
     NMC_WRITE
 } nmc_state_t;
