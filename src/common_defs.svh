@@ -27,7 +27,7 @@ typedef logic[$clog2(`N_NMC)-1:0]               nmc_index_t;
 typedef logic[$clog2(`N_NMC_CELL)-1:0]          nmc_offset_t;
 typedef logic[$clog2(`N_NMC_CELL*`N_NMC)-1:0]   nmc_addr_t;
 typedef feature_t                               nmc_feature_t;
-typedef logic[`RESULT_WIDTH-1:0]                nmc_result_t;
+typedef float_t[`N_RESULT-1:0]                  nmc_result_t;
 typedef struct packed {
     nmc_offset_t id;
     nmc_feature_t feature;

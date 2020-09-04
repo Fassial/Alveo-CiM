@@ -2,10 +2,10 @@
 `include "cam_defs.svh"
 
 module tcam_top #(
-    parameter       KEY_WIDTH   =   32,
-    parameter       KEY_DEPTH   =   16,
-    parameter       VALUE_WIDTH =   32,
-    parameter       VALUE_DEPTH =   16
+    parameter       KEY_WIDTH   =   `KEY_WIDTH,
+    parameter       KEY_DEPTH   =   `KEY_DEPTH,
+    parameter       VALUE_WIDTH =   `VALUE_WIDTH,
+    parameter       VALUE_DEPTH =   `VALUE_DEPTH
 ) (
     // external signals
     input   logic   clk,
@@ -23,8 +23,8 @@ tcam_req_t tcam_req;
 tcam_resp_t tcam_resp;
 // define interface for value_sram
 logic vs_we;
-addr_t vs_addr;
-value_t vs_data_i, vs_data_o;
+cam_addr_t vs_addr;
+cam_value_t vs_data_i, vs_data_o;
 
 // inst tcam
 tcam #(
@@ -45,7 +45,7 @@ assign tcam_req = tcam_top_req.tcam_req;
 // inst value_sram
 single_port_ram #(
     .SIZE   ( VALUE_DEPTH   ),
-    .dtype  ( value_t       )
+    .dtype  ( cam_value_t       )
 ) value_sram (
     // external signals
     .clk,

@@ -2,8 +2,8 @@
 `include "cam_defs.svh"
 
 module tcam #(
-    parameter       KEY_WIDTH   =   32,
-    parameter       KEY_DEPTH   =   16
+    parameter       KEY_WIDTH   =   `KEY_WIDTH,
+    parameter       KEY_DEPTH   =   `KEY_DEPTH
 ) (
     // external signals
     input   logic   clk,
@@ -18,10 +18,10 @@ module tcam #(
 
 // def interface for tcam_cell
 logic[KEY_DEPTH-1:0] data_match, data_we;
-cam_t[KEY_DEPTH-1:0] data_o;
+cam_key_t[KEY_DEPTH-1:0] data_o;
 // def interface for prior_mux
 logic[KEY_DEPTH-1:0] match_line;
-addr_t match_index;
+cam_addr_t match_index;
 
 // set data_we
 always_comb begin
@@ -73,25 +73,25 @@ assign tcam_resp.data_vld = tcam_req.addr_vld & ~tcam_req.we;
 endmodule
 
 module tcam_cell #(
-    parameter       KEY_WIDTH   =   32
+    parameter       KEY_WIDTH   =   `KEY_WIDTH
 ) (
     // external signals
     input   logic   clk,
     input   logic   rst,
 
     // input data
-    input   logic   data_we,
-    input   logic   data_vld,
-    input   cam_t   data_i,
-    input   cam_t   data_mask,
+    input   logic       data_we,
+    input   logic       data_vld,
+    input   cam_key_t   data_i,
+    input   cam_key_t   data_mask,
 
     // output match & data
-    output  logic   data_match,
-    output  cam_t   data_o
+    output  logic       data_match,
+    output  cam_key_t   data_o
 );
 
 // cell_data
-cam_t cell_data, cell_data_n;
+cam_key_t cell_data, cell_data_n;
 // cell_data_vld
 logic cell_data_vld, cell_data_vld_n;
 
