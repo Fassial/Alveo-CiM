@@ -42,8 +42,10 @@ def main():
         feature = prep_dataset["test_data"]["feature"]
     ); print(test_encode.shape);
     # save test_encode
+    encode_python_path = os.path.join(ENCODE_PATH, "python")
+    if not os.path.exists(encode_python_path): os.mkdir(encode_python_path)
     utils.store_data(
-        filename = os.path.join(ENCODE_PATH, "python", "test_encode.csv"),
+        filename = os.path.join(encode_python_path, "test_encode.csv"),
         src = test_encode,
         fmt = "%d"
     )
